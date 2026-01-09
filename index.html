@@ -1155,6 +1155,7 @@ The Nexus awaits.`;
         // ============================================================
         let messages = [];
         let characterSheet = '';  // Portable character sheet from session
+        let currentStoryName = localStorage.getItem('nexus_story_name') || '';  // Persisted story name
         let isGenerating = false;
         let abortController = null;
 
@@ -1260,6 +1261,9 @@ The Nexus awaits.`;
             const sessions = getSessions();
             const list = document.getElementById('sessions-list');
             
+            // Populate the session name input with current story name
+            document.getElementById('session-name-input').value = currentStoryName || '';
+            
             let html = '';
             
             // Local storage sessions
@@ -1352,10 +1356,22 @@ The Nexus awaits.`;
                         messages = data.messages;
                         // Load character sheet if present (cross-device sync)
                         characterSheet = data.character_sheet || '';
+                        
+                        // Extract story name from filename (remove timestamp and extension)
+                        let storyName = file.name.replace('.json', '');
+                        // Remove _archive_TIMESTAMP or _TIMESTAMP patterns
+                        storyName = storyName.replace(/_archive_\d{8}_\d{6}$/, '');
+                        storyName = storyName.replace(/_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}$/, '');
+                        storyName = storyName.replace(/_\d{8}_\d{6}$/, '');
+                        
+                        currentStoryName = storyName;
+                        localStorage.setItem('nexus_story_name', storyName);
+                        document.getElementById('session-name-input').value = storyName;
+                        
                         renderMessages();
                         closeSessions();
                         const hasSheet = characterSheet ? ' (with character sheet)' : '';
-                        setStatus(`Loaded: ${file.name}${hasSheet}`, 'success');
+                        setStatus(`Loaded: ${storyName}${hasSheet}`, 'success');
                     } else {
                         throw new Error('Invalid session format');
                     }
@@ -1373,7 +1389,17 @@ The Nexus awaits.`;
                 return;
             }
             
-            const baseName = document.getElementById('session-name-input').value.trim() || 'session';
+            // Get name from input, or use current story name, or default to 'session'
+            let baseName = document.getElementById('session-name-input').value.trim();
+            if (!baseName) {
+                baseName = currentStoryName || 'session';
+            }
+            
+            // Persist the story name
+            currentStoryName = baseName;
+            localStorage.setItem('nexus_story_name', baseName);
+            document.getElementById('session-name-input').value = baseName;
+            
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const filename = `${baseName}_${timestamp}`;
             
@@ -1417,10 +1443,21 @@ The Nexus awaits.`;
                 return;
             }
             
-            const baseName = document.getElementById('session-name-input').value.trim() || 'session';
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            // Get name from input, or use current story name, or default to 'session'
+            let baseName = document.getElementById('session-name-input').value.trim();
+            if (!baseName) {
+                baseName = currentStoryName || 'session';
+            }
             
-            // 1. Save full archive
+            // Persist the story name
+            currentStoryName = baseName;
+            localStorage.setItem('nexus_story_name', baseName);
+            document.getElementById('session-name-input').value = baseName;
+            
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const archiveFilename = `${baseName}_archive_${timestamp}.json`;
+            
+            // 1. Prepare archive data
             const archiveData = {
                 version: "1.0",
                 created: new Date().toISOString(),
@@ -1432,15 +1469,55 @@ The Nexus awaits.`;
                 character_sheet: characterSheet
             };
             
-            const archiveBlob = new Blob([JSON.stringify(archiveData, null, 2)], { type: 'application/json' });
-            const archiveUrl = URL.createObjectURL(archiveBlob);
-            const archiveLink = document.createElement('a');
-            archiveLink.href = archiveUrl;
-            archiveLink.download = `${baseName}_archive_${timestamp}.json`;
-            archiveLink.click();
-            URL.revokeObjectURL(archiveUrl);
+            const archiveJson = JSON.stringify(archiveData, null, 2);
+            const archiveBlob = new Blob([archiveJson], { type: 'application/json' });
+            
+            // Try to save the archive file
+            let archiveSaved = false;
+            
+            // Method 1: Try Web Share API (works well on mobile)
+            if (navigator.canShare && navigator.canShare({ files: [new File([archiveBlob], archiveFilename, { type: 'application/json' })] })) {
+                try {
+                    const file = new File([archiveBlob], archiveFilename, { type: 'application/json' });
+                    await navigator.share({
+                        files: [file],
+                        title: 'Nexus Archive',
+                        text: `Archive: ${archiveFilename}`
+                    });
+                    archiveSaved = true;
+                } catch (err) {
+                    if (err.name !== 'AbortError') {
+                        console.log('Share failed, trying download:', err);
+                    } else {
+                        // User cancelled share
+                        if (!confirm('Archive share was cancelled. Continue anyway without saving archive?')) {
+                            return;
+                        }
+                        archiveSaved = true; // User chose to continue
+                    }
+                }
+            }
+            
+            // Method 2: Traditional download (fallback)
+            if (!archiveSaved) {
+                const archiveUrl = URL.createObjectURL(archiveBlob);
+                const archiveLink = document.createElement('a');
+                archiveLink.href = archiveUrl;
+                archiveLink.download = archiveFilename;
+                document.body.appendChild(archiveLink);
+                archiveLink.click();
+                document.body.removeChild(archiveLink);
+                URL.revokeObjectURL(archiveUrl);
+                
+                // Give user time to see the download, then confirm
+                await new Promise(resolve => setTimeout(resolve, 500));
+                if (!confirm(`Archive "${archiveFilename}" should be downloading.\\n\\nClick OK to continue with summary generation, or Cancel to stop.`)) {
+                    return;
+                }
+            }
             
             setStatus('Archive saved, generating summary...', '');
+            closeSessions();
             
             // 2. Generate continuity summary using AI
             try {
@@ -1522,6 +1599,8 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
             }
             messages = [];
             characterSheet = '';  // Clear character sheet for new session
+            currentStoryName = '';  // Clear story name
+            localStorage.removeItem('nexus_story_name');
             renderMessages();
             setStatus('New session started');
         }
