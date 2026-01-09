@@ -34,26 +34,50 @@
             flex-direction: column;
         }
 
-        /* Header */
+        /* Header - Floating Menu Bar */
         .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
             background: var(--bg-mid);
-            padding: 12px 20px;
+            padding: 8px 16px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-shrink: 0;
+            transition: all 0.3s ease;
+        }
+
+        .header.scrolled {
+            padding: 6px 12px;
+            background: rgba(21, 21, 32, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .header.scrolled h1 {
+            font-size: 1em;
+        }
+
+        .header.scrolled .header-btn {
+            padding: 4px 10px;
+            font-size: 0.8em;
         }
 
         .header h1 {
             color: var(--accent);
-            font-size: 1.3em;
+            font-size: 1.2em;
             font-weight: normal;
+            transition: font-size 0.3s ease;
+            white-space: nowrap;
         }
 
         .header-buttons {
             display: flex;
-            gap: 8px;
+            gap: 6px;
         }
 
         .header-btn {
@@ -70,6 +94,12 @@
         .header-btn:hover {
             background: var(--border);
             color: var(--text);
+        }
+
+        /* Spacer to prevent content from hiding under fixed header */
+        .header-spacer {
+            height: 52px;
+            flex-shrink: 0;
         }
 
         /* Chat Area */
@@ -391,14 +421,16 @@
     </style>
 </head>
 <body>
-    <div class="header">
+    <div class="header" id="header">
         <h1>✦ The Nexus</h1>
         <div class="header-buttons">
-            <button class="header-btn" onclick="showSettings()">⚙ Settings</button>
-            <button class="header-btn" onclick="showSessions()">📁 Sessions</button>
-            <button class="header-btn" onclick="newSession()">✦ New</button>
+            <button class="header-btn" onclick="showSettings()">⚙️</button>
+            <button class="header-btn" onclick="showSessions()">💾</button>
+            <button class="header-btn" onclick="newSession()">✦</button>
         </div>
     </div>
+    
+    <div class="header-spacer"></div>
 
     <div class="chat-container" id="chat-container">
         <div class="welcome">
@@ -1791,10 +1823,24 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
         });
 
         // ============================================================
+        // SCROLL HANDLER - Floating Header
+        // ============================================================
+        const header = document.getElementById('header');
+        const chatContainer = document.getElementById('chat-container');
+        
+        chatContainer.addEventListener('scroll', () => {
+            if (chatContainer.scrollTop > 50) {
+                header.classList.add('scrolled');
+            } else {
+                header.classList.remove('scrolled');
+            }
+        });
+
+        // ============================================================
         // INIT
         // ============================================================
         // Check for API key on load
-        if (!getApiKey()) {
+        if (!getApiKey() && !getGoogleApiKey()) {
             setTimeout(() => {
                 setStatus('Please set your API key in Settings', 'error');
             }, 500);
