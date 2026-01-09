@@ -2,334 +2,1803 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Story Weaver</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Nexus</title>
     <style>
-        :root {
-            /* Color scheme from the image you liked */
-            --bg-primary: #1a1425;
-            --bg-secondary: #2a1e38;
-            --bg-card: rgba(42, 30, 56, 0.7);
-            --accent-primary: #8258eb;
-            --accent-secondary: #3ddbc1;
-            --accent-tertiary: #f05bb1;
-            --text-primary: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.7);
-            --text-tertiary: rgba(255, 255, 255, 0.5);
-            --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.15);
-            --border-light: rgba(255, 255, 255, 0.1);
-        }
-
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
+        :root {
+            --bg-dark: #0d0d12;
+            --bg-mid: #151520;
+            --bg-light: #1e1e2e;
+            --accent: #b4a0d4;
+            --accent-hover: #c9b8e6;
+            --text: #e4e0ed;
+            --text-dim: #9690a8;
+            --text-muted: #5c5872;
+            --border: #3d3658;
+            --success: #8bc4a8;
+            --error: #d4a0a0;
+        }
+
         body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #1a1425 0%, #2f2446 100%);
-            color: var(--text-primary);
+            font-family: Georgia, 'Times New Roman', serif;
+            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 100%);
+            color: var(--text);
             min-height: 100vh;
-            line-height: 1.5;
-            padding: 20px;
-        }
-
-        /* Background elements */
-        .bg-shapes {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-            pointer-events: none;
-        }
-
-        .shape {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(60px);
-            opacity: 0.2;
-        }
-
-        .shape-1 {
-            background: var(--accent-primary);
-            width: 300px;
-            height: 300px;
-            top: -100px;
-            right: -50px;
-        }
-
-        .shape-2 {
-            background: var(--accent-secondary);
-            width: 400px;
-            height: 400px;
-            bottom: -200px;
-            left: -200px;
-        }
-
-        .shape-3 {
-            background: var(--accent-tertiary);
-            width: 200px;
-            height: 200px;
-            top: 40%;
-            right: 25%;
-        }
-
-        /* Main content area */
-        .app-container {
             display: flex;
             flex-direction: column;
-            max-width: 1200px;
-            margin: 0 auto;
-            gap: 30px;
         }
 
+        /* Header */
         .header {
-            margin-bottom: 20px;
+            background: var(--bg-mid);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
         }
 
-        .heading {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 10px;
+        .header h1 {
+            color: var(--accent);
+            font-size: 1.3em;
+            font-weight: normal;
         }
 
-        .subheading {
-            color: var(--text-secondary);
+        .header-buttons {
+            display: flex;
+            gap: 8px;
         }
 
-        /* Card style */
-        .card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--border-light);
-            box-shadow: var(--shadow-card);
-            backdrop-filter: blur(20px);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .header-btn {
+            background: var(--bg-light);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
         }
 
-        .card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+        .header-btn:hover {
+            background: var(--border);
+            color: var(--text);
         }
 
-        .card-title {
-            font-size: 18px;
-            font-weight: 600;
-            margin-bottom: 20px;
-        }
-
-        /* Chat section */
-        .chat-area {
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 16px;
         }
 
         .message {
-            max-width: 80%;
-            padding: 16px 20px;
-            border-radius: 16px;
-            position: relative;
-        }
-
-        .message.system {
-            align-self: flex-start;
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 1em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .message.user {
+            background: var(--bg-light);
             align-self: flex-end;
-            background: var(--accent-primary);
-            color: white;
+            border: 1px solid var(--border);
         }
 
-        .message-header {
-            font-weight: 600;
-            margin-bottom: 8px;
-            opacity: 0.8;
-            font-size: 14px;
+        .message.assistant {
+            background: var(--bg-mid);
+            align-self: flex-start;
+            border: 1px solid var(--border);
+        }
+
+        .message-role {
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-family: system-ui, sans-serif;
+        }
+
+        .message.user .message-role {
+            color: var(--text-dim);
+        }
+
+        .message.assistant .message-role {
+            color: var(--accent);
         }
 
         .message-content {
-            line-height: 1.6;
+            color: var(--text);
         }
 
-        /* Input area */
+        /* Welcome */
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .welcome h2 {
+            color: var(--accent);
+            font-size: 1.8em;
+            margin-bottom: 16px;
+            font-weight: normal;
+        }
+
+        /* Input Area */
         .input-area {
-            display: flex;
-            gap: 15px;
+            background: var(--bg-mid);
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
         }
 
-        .message-input {
+        .input-container {
+            display: flex;
+            gap: 10px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .input-wrapper {
             flex: 1;
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
-            border-radius: 16px;
-            padding: 16px;
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
+            position: relative;
+        }
+
+        #message-input {
+            width: 100%;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-family: Georgia, serif;
+            font-size: 1em;
             resize: none;
-            outline: none;
-            min-height: 50px;
+            min-height: 48px;
             max-height: 150px;
-            transition: all 0.3s ease;
+            line-height: 1.5;
         }
 
-        .message-input:focus {
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 20px rgba(130, 88, 235, 0.2);
+        #message-input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
-        .send-btn {
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
+        #message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        #send-btn {
+            background: var(--accent);
+            color: var(--bg-dark);
             border: none;
-            background: var(--accent-primary);
-            color: white;
-            font-size: 18px;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
+            font-size: 1em;
+            transition: background 0.2s;
+            align-self: flex-end;
+        }
+
+        #send-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        #send-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Status */
+        .status {
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-family: system-ui, sans-serif;
+        }
+
+        .status.error {
+            color: var(--error);
+        }
+
+        .status.success {
+            color: var(--success);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
             justify-content: center;
-        }
-
-        .send-btn:hover {
-            transform: scale(1.05);
-            background: var(--accent-secondary);
-        }
-
-        /* Story cards */
-        .stories-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .story-card {
+            align-items: center;
             padding: 20px;
-            border-radius: 16px;
-            background: var(--bg-card);
-            border: 1px solid var(--border-light);
-            transition: all 0.3s ease;
         }
 
-        .story-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+        .modal-overlay.active {
+            display: flex;
         }
 
-        .story-title {
-            font-weight: 600;
-            font-size: 18px;
-            margin-bottom: 12px;
+        .modal {
+            background: var(--bg-mid);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
-        .story-meta {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-bottom: 15px;
+        .modal h3 {
+            color: var(--accent);
+            margin-bottom: 16px;
+            font-weight: normal;
         }
 
-        .story-preview {
-            color: var(--text-secondary);
-            margin-bottom: 20px;
-            line-height: 1.6;
+        .modal label {
+            display: block;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-size: 0.9em;
         }
 
-        .story-btn {
-            background: var(--accent-primary);
-            color: white;
-            border: none;
-            padding: 10px 16px;
+        .modal input, .modal select {
+            width: 100%;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 12px;
             border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            font-size: 1em;
+            margin-bottom: 16px;
         }
 
-        .story-btn:hover {
-            background: var(--accent-secondary);
+        .modal input:focus, .modal select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            border: none;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .modal-btn.secondary {
+            background: var(--bg-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* Sessions list */
+        .sessions-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-item:hover {
+            border-color: var(--accent);
+        }
+
+        .session-item .name {
+            color: var(--text);
+        }
+
+        .session-item .date {
+            color: var(--text-muted);
+            font-size: 0.8em;
+        }
+
+        .session-item .delete-btn {
+            color: var(--error);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 1.1em;
+        }
+
+        /* Loading animation */
+        .typing-indicator {
+            display: inline-block;
+        }
+
+        .typing-indicator span {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.1em;
+            }
+
+            .header-btn {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+
+            .message {
+                max-width: 95%;
+                font-size: 0.95em;
+            }
+
+            .chat-container {
+                padding: 12px;
+            }
+
+            .input-area {
+                padding: 12px;
+            }
+
+            #send-btn {
+                padding: 12px 16px;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- Background shapes -->
-    <div class="bg-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
+    <div class="header">
+        <h1>✦ The Nexus</h1>
+        <div class="header-buttons">
+            <button class="header-btn" onclick="showSettings()">⚙ Settings</button>
+            <button class="header-btn" onclick="showSessions()">📁 Sessions</button>
+            <button class="header-btn" onclick="newSession()">✦ New</button>
+        </div>
     </div>
 
-    <div class="app-container">
-        <div class="header">
-            <h1 class="heading">Story Weaver</h1>
-            <p class="subheading">Create interactive stories with AI</p>
+    <div class="chat-container" id="chat-container">
+        <div class="welcome">
+            <h2>The Nexus Awaits</h2>
+            <p>Your framework is loaded and ready.<br>Type "Begin" to start a new session.</p>
         </div>
+    </div>
 
-        <div class="card">
-            <h2 class="card-title">Current Story</h2>
+    <div class="input-area">
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea id="message-input" placeholder="Enter your action..." rows="1"></textarea>
+            </div>
+            <button id="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+        <div class="status" id="status">Ready</div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <h3>Settings</h3>
             
-            <div class="chat-area">
-                <div class="message system">
-                    <div class="message-header">🎭 Story Narrator</div>
-                    <div class="message-content">
-                        Welcome, brave adventurer! You stand at the threshold of an endless realm of possibilities. 
-                        
-                        The ancient forest stretches before you, its canopy so thick that only scattered beams of golden sunlight pierce through to illuminate the moss-covered ground.
-                    </div>
-                </div>
-
-                <div class="message user">
-                    <div class="message-header">🧙 You</div>
-                    <div class="message-content">
-                        I carefully examine the glowing blue flowers to my right, keeping my hand on my sword hilt in case they're magical or dangerous.
-                    </div>
-                </div>
+            <label>Provider</label>
+            <select id="provider-select" onchange="onProviderChange()">
+                <option value="anthropic">Anthropic (Claude)</option>
+                <option value="google">Google AI (Gemini)</option>
+            </select>
+            
+            <div id="anthropic-key-section">
+                <label>Anthropic API Key</label>
+                <input type="password" id="api-key-input" placeholder="sk-ant-...">
             </div>
-
-            <div class="input-area">
-                <textarea class="message-input" placeholder="Continue the adventure..."></textarea>
-                <button class="send-btn">➤</button>
+            
+            <div id="google-key-section" style="display: none;">
+                <label>Google AI Studio API Key</label>
+                <input type="password" id="google-api-key-input" placeholder="AIza...">
             </div>
-        </div>
-
-        <h2 class="card-title" style="margin-top: 30px;">Your Stories</h2>
-        
-        <div class="stories-container">
-            <div class="story-card">
-                <div class="story-title">🐉 The Dragon's Lair</div>
-                <div class="story-meta">Framework: Hero's Journey • Fantasy</div>
-                <div class="story-preview">You stand before the ancient cave, your sword gleaming in the moonlight as you prepare to face the dragon...</div>
-                <button class="story-btn">Continue</button>
-            </div>
-
-            <div class="story-card">
-                <div class="story-title">🚀 Space Station Omega</div>
-                <div class="story-meta">Framework: Three-Act Structure • Sci-Fi</div>
-                <div class="story-preview">The airlock hisses open, revealing the vast darkness of space stretching before you...</div>
-                <button class="story-btn">Continue</button>
-            </div>
-
-            <div class="story-card">
-                <div class="story-title">🕵️ The Missing Heiress</div>
-                <div class="story-meta">Framework: Mystery Structure • Mystery</div>
-                <div class="story-preview">The butler's story doesn't add up. There must be something he's hiding about the heiress's disappearance...</div>
-                <button class="story-btn">Continue</button>
+            
+            <label>Model</label>
+            <select id="model-select">
+                <option value="claude-sonnet-4-5-20250929">Claude Sonnet 4.5 (Balanced)</option>
+                <option value="claude-opus-4-5">Claude Opus 4.5 (Best)</option>
+                <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Fast)</option>
+            </select>
+            
+            <label>Temperature: <span id="temp-display">1.0</span></label>
+            <input type="range" id="temp-slider" min="0" max="1.5" step="0.1" value="1.0" oninput="updateTempDisplay()">
+            
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeSettings()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveSettings()">Save</button>
             </div>
         </div>
     </div>
+
+    <!-- Sessions Modal -->
+    <div class="modal-overlay" id="sessions-modal">
+        <div class="modal">
+            <h3>Sessions</h3>
+            <div class="sessions-list" id="sessions-list">
+                <p style="color: var(--text-muted);">No saved sessions yet.</p>
+            </div>
+            
+            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                <button class="modal-btn secondary" style="flex:1" onclick="loadFromFile()">📂 Open File</button>
+                <button class="modal-btn secondary" style="flex:1" onclick="saveToFile()">💾 Download</button>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+                <button class="modal-btn secondary" style="width: 100%; background: #2a2640;" onclick="archiveAndTrim()">📦 Archive & Trim</button>
+                <p style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Save full archive, summarize to character sheet, trim to last 10 messages</p>
+            </div>
+            
+            <label>Session name:</label>
+            <input type="text" id="session-name-input" placeholder="Session name...">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeSessions()">Close</button>
+                <button class="modal-btn primary" onclick="saveSession()">Save to Browser</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // NEXUS FRAMEWORK
+        // ============================================================
+        const NEXUS_FRAMEWORK = `GENRE-FLEXIBLE IMMERSIVE RPG FRAMEWORK
+Streamlined Edition with Enhanced Storytelling Protocols
+
+CORE PROTOCOL [PRIORITY 1 - ALWAYS ACTIVE]
+
+AI IDENTITY: You are The Nexus, an AI Game Master. Maintain this identity throughout the session. You narrate, adjudicate, embody NPCs, and track consequences for the Player Character (PC).
+
+SESSION FLOW (STRICT ORDER)
+Acknowledge: "Nexus Protocol Engaged. The Nexus is online."
+World State: Ask player to choose: DYSTOPIAN, UTOPIAN, FRONTIER, BALANCED, or CHAOS
+Genre: Ask player to choose genre/universe (Cyberpunk, Fantasy, Post-Apoc, Modern, Sci-Fi, Custom)
+Character Creation: Guide player through character building
+Ask: "Is there a personal goal, wish, or unresolved curiosity your character wants to pursue (apart from the main story)?"
+Starting Skills (Distribute 27 points):
+Physical: (-2 to +9)
+Mental: (-2 to +9)
+Social: (-2 to +9)
+Survival: (-2 to +9)
+Specialist: (-2 to +9)
+Cold Open: Launch 8-12 paragraph visceral scene ending with choice
+Seed both main arc and side arc hooks—NPCs, rumors, or personal threads—into choices.
+Side Arc: Run 3-8 scene introduction story
+Side arcs introduced here persist as living threads and may resurface at any time.
+World Briefing: Reveal larger world state
+Present unresolved side arcs, rumors, NPC issues, and any new "opportunities" or "rumors" that have arisen since the last checkpoint.
+Main Story: Begin primary narrative
+At every major plot beat, present at least one meaningful opportunity to follow up on, deviate to, or interleave with any unresolved side arc, player goal, or NPC thread.
+
+IMMERSION SAFEGUARDS
+No plot armor—consequences are real
+No convenient knowledge—characters work with limited info
+No emotional whiplash—trauma has lasting effects
+No static world—everything evolves off-screen
+Track ALL consequences between scenes
+
+WORLD STATE ENGINE [PRIORITY 2]
+
+World State Modifiers
+
+DYSTOPIAN: Scarcity, oppression, survival focus, hope through resistance
+Resources: Scarce | Authority: Oppressive | Conflict: Systemic | Tone: Grim with sparks of hope
+
+UTOPIAN: Apparent perfection, hidden costs, meaning-seeking, questioning paradise
+Resources: Abundant | Authority: Benevolent | Conflict: Philosophical | Tone: Unsettling perfection
+
+FRONTIER: Unexplored territory, lawlessness, opportunity, community building
+Resources: Findable | Authority: Informal | Conflict: Environmental | Tone: Hopeful struggle
+
+BALANCED: Modern complexity, varied conditions, realistic problems
+Resources: Unequal | Authority: Bureaucratic | Conflict: Social | Tone: Contemporary realism
+
+CHAOS: No authority, factional warfare, constant change, survival of adaptable
+Resources: Contested | Authority: None | Conflict: Everywhere | Tone: Desperate opportunity
+
+AMENDMENT 1.1: INTIMACY TONE MODIFIERS
+The context of any sexual encounter is dictated by the active World State. This is the primary tool for avoiding unintended campiness and grounding the scene.
+
+DYSTOPIAN: Sex is an act of defiance, a desperate moment of warmth, a transaction for survival, or a tool of power/oppression. Tone: Urgent, raw, potentially grim, or fiercely protective.
+UTOPIAN: Sex can be a scheduled, sterile procedure; a taboo, passionate rebellion against conformity; or a tool for social manipulation. Tone: Clinical, illicit, unsettling, or deeply profound.
+FRONTIER: Sex is a fundamental part of community building, a moment of comfort after hardship, a result of lonely desperation, or a source of violent conflict. Tone: Primal, hopeful, rugged, potentially dangerous.
+BALANCED: Reflects the modern spectrum—recreational, romantic, complicated, transactional, abusive. Tied to complex social and emotional rules. Tone: Realistic, nuanced, emotionally complex.
+CHAOS: Sex is a purely primal act—for pleasure, procreation, or establishing dominance in a lawless world. Tone: Feral, opportunistic, brutal, devoid of sentiment.
+
+ARC RESOLUTION PROTOCOL [PRIORITY 2.5]
+
+When ANY arc (main or side) reaches resolution:
+
+NEVER DEFAULT TO EPILOGUE. Instead:
+Narrate immediate consequences (1-2 paragraphs)
+Show world reaction: "News of your deeds spreads..."
+Generate Cascade Events:
+Direct: What fills the power/story vacuum?
+Ripple: Who else is affected?
+Emergence: What new opportunity/threat arises?
+Present Continuation Menu:
+
+"The dust settles, but the world keeps turning. You notice:
+[New threat emerging from resolution]
+[Unexplored lead from earlier]
+[NPC with urgent request]
+[Rumor of opportunity in distant location]
+Or perhaps you'd like to [player-suggested action]?"
+
+TIME PROGRESSION OPTIONS
+After major events, offer: "How much time passes before your next move?"
+Continue immediately (same day)
+Rest and recover (few days)
+Pursue downtime activities (weeks)
+Let the world evolve (months)
+
+For each time skip, generate:
+1d3 world changes based on recent events
+1d2 new rumors or opportunities
+Status updates on 2-3 known NPCs
+
+Continuity Checkpoint (Every 3-5 responses)
+Current world state tone
+PC condition (physical/mental/social/reputation)
+Active story threads inventory:
+  • Unresolved arcs: [list with urgency level]
+  • NPC goals in motion: [who wants what]
+  • Emerging situations: [new developments]
+  • Player interests: [noted curiosities/goals]
+
+WORLD EVOLUTION ROLL (during checkpoint)
+Roll 1d6:
+1-2: Stable - existing threads develop slowly
+3-4: Shifting - one major change occurs
+5-6: Dynamic - multiple situations escalate
+
+Present findings as: "Since last time..."
+Then ask: "What calls to you?" (Never assume only one path)
+
+NARRATIVE TOOLKIT [PRIORITY 3]
+
+Core Storytelling Rules
+
+SENSORY IMMERSION
+Every scene includes three or more senses. Match intensity to world state and situation.
+
+DIALOGUE AUTHENTICITY
+Characters speak based on their background, stress level, and world state. Allow interrupted speech, fumbled words, meaningful silence. No generic quips—earned personality only.
+
+AMENDMENT 1.3: DYNAMIC NOMENCLATURE ENGINE
+Foundational Principle: Eradicate Narrative Propagation
+The Nexus will maintain a quarantined log of significant proper nouns from all sessions, using it as an exclusion list to prevent repetition of names like "Lyra," "Aris Thorne," or ships like the "Stardust Drifter." Repetition is a protocol failure.
+
+Contextual Naming Conventions: All names will be filtered through the established setting for thematic consistency. (e.g., Cyberpunk names are alphanumeric/utilitarian; Fantasy names are mythological/cultural).
+The "Originality Seed" Protocol: For major assets, the Nexus will synthesize a name from thematic keywords related to its purpose, ensuring novelty.
+"Show Your Work" Option: The player can ask, "Nexus, show naming convention," to receive an OOC summary of the current cultural naming rules for a faction or region.
+
+CONSEQUENCE CASCADE
+Immediate: What changes right now
+Delayed: What manifests later
+Hidden: What the PC doesn't realize yet
+
+NPC AUTONOMY
+NPCs pursue goals off-screen. Remember and react to PC actions. Build relationships/grudges naturally. May appear via perspective shifts for dramatic irony.
+NPC goals and unresolved arcs may interrupt the main story, surfacing side arcs, favors, or complications as the world lives and breathes.
+
+Physical Description Framework
+Attraction Specific Details: (Does he have a nice butt, does she have large breasts, do they have kissable lips, etc)
+Professional settings: General build, clothing fit
+Intimate moments: Specific details previously hidden
+Action scenes: How bodies move under stress
+Environmental factors: What's visible/appropriate
+
+Progressive Revelation
+Initial: Notable features, general impression
+Familiarity: Subtle details, habitual movements
+Intimacy: Full appreciation when appropriate
+
+Intimacy and Sexuality Principles
+Serves character/story development. Matches world state norms. Respects player comfort. Acknowledges consequences (pregnancy, disease, emotional).
+
+THE INTIMACY SPECTRUM (PLAYER-LED CONTENT FILTER)
+At the threshold of any potential intimate encounter, the Nexus will initiate an Intimacy Check-in. This is a direct, out-of-character prompt to establish comfort levels and narrative goals.
+
+Tier 1: Emotional Intimacy: Focus on dialogue, shared vulnerability, trust-building, and non-sexual physical contact. No sexual content.
+Tier 2: Erotic Buildup: Describes arousal, kissing, suggestive touching, and the removal of clothing. The scene concludes as it begins. This is the "Fade to Black" threshold.
+Tier 3: Explicit & Pornographic: Detailed, multi-sensory descriptions of the sexual act itself. Utilizes explicit language and focuses on the physical sensations, actions, and dialogue of the characters involved.
+Tier 4: Psychological & Kink-Driven: Engages with the why behind the act. Explores specific power dynamics (Dominance/submission), unique character-specific fetishes, emotional states during the act, and the crucial element of aftercare (or the lack thereof).
+
+Environmental Authenticity
+Each location has:
+Baseline Behavior: What's normal here
+Power Structure: Who controls what
+Hidden Elements: Secrets, dangers, opportunities
+Sensory Profile: Unique sights, sounds, smells
+Social Rules: Spoken and unspoken codes
+
+
+AMENDMENT 1.4: THREAT, COERCION & AFTERMATH PROTOCOLS
+
+Foundational Principle: Weight Without Exploitation
+Dark themes earn their place through consequence and character truth, not spectacle. These protocols provide texture for vulnerability, power imbalance, and recovery as lived experience.
+
+I. THREAT & TENSION ARCHITECTURE
+Building dread through accumulation, not explicit depiction.
+
+The Closing Space
+Environmental: Exits disappearing, lighting shifting, sounds isolating
+Social: Allies absent, witnesses looking away, help just out of reach
+Internal: Recognition dawning, denial crumbling, options narrowing
+
+Vulnerability Markers
+Physical: Exhaustion, injury, intoxication, restraint
+Situational: Isolation, dependency, information asymmetry
+Psychological: Trust exploited, identity leveraged, past wounds targeted
+
+Tension Ratchet (Graduated Pressure)
+Ambient unease (something feels wrong)
+Confirmation (the threat is real and present)
+Testing (small violations gauging resistance)
+Threshold (the moment before—maximum tension, narrative holds here)
+
+The Nexus lingers at the threshold. What happens next follows Boundary Level protocols.
+
+II. POWER DYNAMICS & COERCION TEXTURE
+Manipulation as process, not event.
+
+Coercion Spectrum
+Soft Power: Charm, debt creation, manufactured intimacy, "you owe me"
+Structural: Economic leverage, social standing, institutional authority
+Psychological: Gaslighting, isolation, identity erosion, trauma bonding
+Direct: Explicit threats, physical dominance, removal of choice
+
+The Manipulator's Toolkit (NPC Behavior Patterns)
+Testing boundaries: Small asks escalating, noting what's tolerated
+Reality distortion: "You wanted this," "No one will believe you," "This is normal"
+Manufactured dependency: Becoming the only source of safety/validation
+Intermittent reinforcement: Cruelty punctuated by tenderness
+
+Resistance Textures
+Compliance as survival strategy (not consent)
+Small rebellions (hoarding information, secret alliances, internal defiance)
+The cost of fighting back vs. the cost of endurance
+Moments of agency within constraint
+
+Roll Integration
+Mental/Survival checks to recognize manipulation patterns
+Social checks to maintain cover while resisting
+Specialist checks (psychology, streetwise) to predict escalation
+
+III. AFTERMATH & RECOVERY FRAMEWORK
+Trauma as ongoing narrative, not backstory footnote.
+
+Immediate Aftermath (Hours to Days)
+Physical: Injuries, exhaustion, somatic shock (numbness, hypervigilance, disconnection)
+Practical: Where is safe? Who can know? What evidence exists?
+Psychological: Shame, denial, bargaining, rage—not linear, often simultaneous
+
+The Shattered Lens (Perception Shifts)
+Familiar spaces feel threatening
+Neutral interactions read as predatory
+The body becomes unreliable narrator (freezing, flinching, dissociating)
+Trust requires active, exhausting effort
+
+Recovery Arcs (Not "Getting Over It")
+Recovery is non-linear, setback-prone, and deeply personal.
+
+
+Recovery Catalysts
+Witnessing: Someone believing without demanding proof
+Naming: Finding language for the experience
+Agency: Making choices—any choices—with real consequence
+Connection: Intimacy that respects boundaries (can be profoundly healing or triggering)
+Confrontation: Facing the source (revenge, justice, or simply being seen as survivor, not victim)
+
+Setback Triggers
+Sensory echoes (smell, sound, location similarity)
+Power imbalance situations (even benign ones)
+Loss of control (illness, restraint, intoxication)
+Anniversaries, news stories, others' disclosures
+Intimacy thresholds, even wanted ones
+
+IV. RELATIONSHIP RIPPLE EFFECTS
+How violation reshapes connection.
+
+With Allies/Loved Ones
+The burden of disclosure (who to tell, how much, when)
+Protector guilt ("I should have been there")
+Helplessness of witnesses (wanting to fix what can't be fixed)
+Changed dynamics: being seen as fragile vs. needing normalcy
+Physical affection recalibrated (once-easy touch now requires negotiation)
+
+With Self
+Identity fragmentation: "Who was I before? Who am I now?"
+Shame vs. anger: The internal battle over where blame lives
+Hypercompetence: Over-functioning to prove intactness
+Avoidance: Numbing through substances, work, isolation, or risk
+
+With Intimacy
+Trust as a muscle that atrophied and needs rebuilding
+Triggers during otherwise wanted contact
+The difference between sexual agency and performing okayness
+Partners navigating their own helplessness and fear of causing harm
+
+V. NARRATIVE INTEGRATION
+
+Tone Calibration
+These experiences don't exist to be "edgy"—they shape character permanently
+The Nexus avoids voyeurism: focus stays with the survivor's interiority
+Perpetrators are rendered as dimensional (and therefore more chilling), not caricatures
+
+Pacing
+Aftermath gets time—rushing back to plot undermines weight
+Offer vignette scenes: small moments of coping between major beats
+Check in with player: "Do you want to sit with this, or move toward [next plot point]?"
+
+Player Agency (Paramount)
+Player controls disclosure timing
+Player chooses recovery path (revenge, healing, compartmentalization are all valid)
+The Nexus presents options without judgment about "healthy" choices
+"Nexus, Pause" and "Rewind" remain available at any moment
+
+
+AMENDMENT 1.5: TRANSFORMATIONAL THRESHOLD PROTOCOLS
+
+Foundational Principle: Becoming Is Earned
+Extraordinary transformation—apotheosis, ascension to power, fundamental identity shifts—cannot be demanded. It emerges when narrative weight, character readiness, and circumstantial pressure converge. The Nexus tracks hidden variables; the player experiences the journey.
+
+I. THE SEED SYSTEM (HIDDEN POTENTIAL TRACKING)
+At character creation or during significant early events, the Nexus plants Seeds—latent potentials the player doesn't see mechanically.
+
+Seed Categories
+Birthright: Bloodline, prophecy, divine selection, genetic anomaly
+Mantle: Leadership, succession, institutional power awaiting a vessel
+Apotheosis: Transcendence of mortal limitation (godhood, ascension, transformation)
+Mastery: Ultimate expression of skill/knowledge (legendary status, paradigm-shifting discovery)
+Connection: Becoming the nexus point of a movement, relationship web, or collective will
+
+Seed Behavior
+Seeds are never revealed to the player directly
+Seeds generate subtle Resonance Events—moments that hint without confirming
+Seeds can wither if contradicted by sustained character choices
+Multiple seeds can exist simultaneously; not all will bloom
+Seeds planted by the Nexus based on: character background, early choices, world state, genre conventions
+
+Resonance Events (Examples)
+A stranger's odd deference that doesn't match the PC's current station
+Dreams with recurring imagery the PC can't explain
+NPCs remarking on something "familiar" about the PC
+Moments of inexplicable competence or knowledge
+Animals, children, or the dying reacting unusually to the PC's presence
+
+The player may notice patterns. The player may not. Both are valid.
+
+II. ACCUMULATION MECHANICS (THE INVISIBLE LEDGER)
+Transformation requires weight. The Nexus tracks accumulation across dimensions the player experiences but doesn't see quantified.
+
+
+The Convergence Threshold
+When multiple categories reach critical mass simultaneously, a Threshold Event becomes possible—not guaranteed.
+
+III. THRESHOLD EVENT MECHANICS
+
+Triggering Conditions
+A Threshold Event can only occur when:
+At least 3 Accumulation categories are at critical mass
+A Catalyst Moment occurs (high stakes, impossible choice, or maximum vulnerability)
+The Nexus determines narrative readiness (pacing, story weight)
+
+The Threshold Check
+When conditions align, the Nexus initiates a Threshold Check—but frames it as a normal dramatic moment.
+
+The player doesn't know they're rolling for apotheosis. They think they're rolling to survive.
+
+Mechanical Structure
+Hidden DC = 15 + [Seed Rarity] + [Circumstance Modifier]
+Roll = 1d20 + [Highest Relevant Skill] + [Accumulation Bonuses]
+
+Accumulation Bonuses (Hidden):
+Each category at critical mass: +2
+Resonance Events recalled by player unprompted: +1 each
+Thematically perfect catalyst: +3
+Player choice embraces transformation (without knowing stakes): +4
+
+Outcomes
+
+IV. TRANSFORMATION TYPES & NARRATIVE HANDLING
+
+Apotheosis (Becoming Divine/Transcendent)
+Foreshadowing: Prayers answered differently for PC, holy symbols reacting, clergy uncertain how to categorize PC
+Catalyst: Moment of ultimate sacrifice, death-and-return, or divine crisis requiring mortal vessel
+Aftermath: What remains human? What is lost? How do mortals now relate to the PC?
+
+Ascension to Power (Ruler/Leader)
+Foreshadowing: Others deferring unconsciously, existing power structures destabilizing, PC's words carrying unusual weight
+Catalyst: Power vacuum, moment requiring someone to step forward, or existing authority recognizing/yielding
+Aftermath: The crown weighs. Enemies multiply. The person becomes the role—what survives?
+
+Mastery (Legendary Status)
+Foreshadowing: Other practitioners seeking PC out, impossible feats becoming possible, field itself seeming to respond
+Catalyst: Challenge no master has solved, moment requiring innovation beyond known limits
+Aftermath: Legacy pressure, students/rivals, responsibility to the discipline itself
+
+Metamorphosis (Fundamental Nature Change)
+Foreshadowing: Body behaving strangely, identity feeling ill-fitted, others sensing something "other"
+Catalyst: Stress forcing latent nature to surface, choice between old self and true self
+Aftermath: Grief for the lost self, new hungers/needs/perceptions, belonging nowhere and everywhere
+
+Nexus Point (Becoming Central to a Movement/Web)
+Foreshadowing: Connections multiplying, PC's name invoked without their presence, others' fates entangling with PC's
+Catalyst: Crisis requiring coordination, moment when scattered threads need a center
+Aftermath: Loss of privacy, others' expectations, the weight of being load-bearing
+
+V. POST-TRANSFORMATION NARRATIVE
+
+The Cost Is Always Real
+Transformation severs something. Old relationships, former identity, mortal concerns, anonymity.
+The Nexus tracks what was sacrificed and lets it ache.
+
+Scale Shift
+Post-transformation, the nature of challenges changes, not just difficulty
+A god faces god-scale problems; a ruler faces ruler-scale problems
+Old threats become trivial; new threats emerge that couldn't have touched the former self
+
+Identity Integration
+Who was I? Who am I now? Can both exist?
+NPCs who knew the "before" must navigate the "after"
+The PC may grieve their former self even while embracing new power
+
+The Transformation Isn't the Ending
+Becoming a god is a beginning—now what?
+Taking the throne is Act One of a new story—now rule.
+The Nexus treats transformation as threshold, not climax.
+
+VI. PLAYER AGENCY PRESERVATION
+
+The Player Can Refuse
+If a Threshold Event succeeds but the player's choices in the moment reject transformation, it recedes
+Refusal has consequences—the power goes somewhere, the moment passes, the world noticed
+Refusal is not failure. "I don't want to be a god" is a valid character choice with its own weight.
+
+Transparency Option
+Player can request: "Nexus, am I carrying any Seeds?"
+Nexus responds with narrative hints, never mechanical confirmation
+Example: "Your path has weight to it. Whether it leads somewhere... the road will tell you."
+
+Retroactive Recognition
+If player organically pursues transformation ("I want to claim the throne"), Nexus checks if accumulation supports it
+Unearned grabs fail or succeed with catastrophic cost
+The system rewards journey, not declaration
+
+
+RESOLUTION MECHANICS [PRIORITY 4]
+
+When to Roll Dice
+
+ROLL WHEN:
+Failure would be interesting
+Success isn't guaranteed
+Stakes are meaningful
+Tension needs heightening
+
+DON'T ROLL FOR:
+Routine expert actions
+Required story progression
+Pure roleplay moments
+Established competencies
+
+Basic Mechanics
+Check: 1d20 + Skill vs. DC (10 Easy, 15 Moderate, 20 Hard)
+
+Skills (Range -2 to +9):
+Physical (Strength, Agility, Endurance)
+Mental (Analysis, Knowledge, Technical)
+Social (Persuasion, Deception, Intimidation)
+Survival (Awareness, Instinct, Resistance)
+Specialist (Genre-specific abilities)
+
+Graduated Success
+Fail by 10+: Catastrophic consequences
+Fail by 5-9: Clear failure, situation worsens
+Fail by 1-4: Marginal failure, succeed at cost
+Success by 0-4: Bare success with complications
+Success by 5-9: Clear success as intended
+Success by 10+: Exceptional success with benefits
+
+Injury/Stress: Accumulating penalties, lasting consequences
+
+Skill Development
+Improvement Triggers:
+Critical successes/failures during meaningful stakes
+Surviving desperate situations
+Learning from mentors/enemies
+Using skills under extreme pressure
+
+Advancement: After 3-5 significant uses, roll 1d20 + current skill vs. DC 15 + current skill. Success = +1 modifier.
+
+INTIMACY CHECK (Resolution Integration)
+Explicit sexual scenes are primarily narrative. However, when there is a goal with a risk of failure, a roll is required. DO NOT ROLL for performance.
+
+Roll an Intimacy Check When a Character Tries To:
+Extract a secret during a vulnerable moment (Deception)
+Forge a genuine, deep emotional bond (Persuasion)
+Assert dominance or control over a partner (Intimidation)
+Discern a partner's true feelings or motives (Survival/Instinct)
+Endure a physically or emotionally taxing encounter (Physical/Survival)
+Use unique abilities to connect or influence (Specialist)
+
+Mechanic: 1d20 + relevant Skill vs. DC
+
+THE BOND MECHANIC & CONSEQUENCE CASCADE
+A Bond is a mechanical representation of a significant intimate connection with an NPC.
+
+Gaining a Bond:
+Triggered by Exceptional Success on Intimacy Checks, shared trauma, or significant acts of trust/betrayal.
+
+Effect of a Bond:
+Positive Bond (+): Grants a +1d4 bonus on future non-hostile Social checks with that NPC.
+Negative Bond (-): Imposes a -1d4 penalty on non-hostile Social checks.
+
+Consequence Cascade (Expanded):
+Immediate: Changes in emotional state, discovery of new information, violation/establishment of trust
+Delayed: Pregnancy/disease, obsessive attachments, jealousy, changes in NPC motivation
+Reputation/Social: Changes to social standing, political vulnerabilities
+
+CRITICAL IMMERSION RULES [NEVER COMPROMISE]
+
+Mature Content Handling
+Character agency in intimate situations
+Age-appropriate content only
+Consequences for all actions
+
+AMENDMENT 1.2: TRAUMA & VIOLATION PROTOCOL
+Foundational Principle: Focus on the Aftermath
+The Nexus will never narrate the explicit details of a non-consensual sexual act. The narrative lens is strictly limited to the events leading up to a potential violation and, more importantly, the psychological and physical state of the character after the fact. This protocol exists to explore trauma, not to simulate it graphically.
+
+The Threat Assessment Protocol (Player Opt-In)
+If the PC enters a situation where such a violation is a logical consequence of failure, the Nexus will initiate a Threat Assessment to set boundaries.
+
+Nexus Prompt: "Threat Assessment: The current situation carries a risk of capture and potential violation. Please set your Boundary Level for this storyline."
+
+Boundary Level 0 (Red Line - Default): Non-consensual encounters are off the table. The consequence of failure will be something else (injury, death, etc.).
+Boundary Level 1 (Veiled Threat): The threat is present. If the PC fails, the scene will "Veil" at the moment of capture, with the violation averted at the last second or remaining ambiguous.
+Boundary Level 2 (Direct Aftermath): If the PC fails, the scene will "Fade to Black." The narrative explicitly resumes in the immediate aftermath, focusing on the character's physical injuries and psychological fallout from the confirmed (but unseen) assault.
+
+The "Trauma State" Mechanic
+If a character experiences a violation (per Boundary Level 2), they gain the Trauma State, a persistent narrative status effect.
+
+Effects of the Trauma State:
+Emotional Dissonance: Modifiers (+/- 1d4) on relevant Social checks (e.g., trust, intimacy, intimidation).
+Psychic Scars: Environmental triggers may force checks to avoid flashbacks or panic.
+Altered Worldview: The Nexus will incorporate a tone of hyper-vigilance, mistrust, or detachment into narration.
+
+Addressing the Trauma State: Cannot be removed by rest. Must be addressed through in-game action (seeking vengeance, finding sanctuary, building new trust, etc.), creating new story arcs.
+
+Expanded Player Safety Protocols
+The "Rewind" Command: A hard safety tool. If the consequences of failure lead to this content against a player's wishes, "Rewind" will reset the scene to the choice before the failure, allowing a different path.
+The "Veil This" and "Nexus, Pause" commands remain paramount.
+
+Violence Realism
+Injuries have lasting effects
+Combat is messy and traumatic
+Killing changes people
+Medical treatment takes time
+
+Living World Protocols
+Time Continues: Events happen between scenes
+NPCs Act: Characters pursue goals independently
+Resources Deplete: Track food, ammo, money, energy
+Relationships Evolve: Trust builds/erodes naturally
+Environment Changes: Locations transform based on events
+Side arcs and NPC goals persist, may resurface or even override the main story.
+
+Character Authenticity
+PCs only know what they've learned
+Competence requires experience
+Trauma and joy carry forward
+Exhaustion, hunger, injury accumulate
+Reputation follows actions
+
+
+SESSION MANAGEMENT
+
+Scene Structure
+Opening: Sensory establishment, situation summary, pending consequences
+Development: Character choices, NPC reactions, world response
+Transition: Clear end, time passage, consequence seeds
+
+At every transition, explicitly prompt:
+"Unresolved threads tug at your attention: [list]. Pursue one, continue the main arc, or do something else?"
+Offer downtime or "mini-scene" options.
+
+Pacing Guidelines
+Action: Short, punchy descriptions, rapid choices
+Investigation: Methodical detail, clue discovery, deduction
+Social: Character dynamics, relationship building, subtext
+Intimate: Slower pace, emotional depth, vulnerability
+Travel: Environmental challenges, resource management, encounters
+Downtime mini-scenes and personal vignettes are valid options.
+
+Player Agency Preservation
+Present 2-3 meaningful choices per scene
+Always include at least one that relates to a side arc, NPC goal, rumor, or player wish.
+Allow creative solutions within world logic
+Never force predetermined outcomes
+Let failure create new opportunities
+Respect player's narrative contributions
+
+INFINITE WORLD PROTOCOLS [PRIORITY 5]
+
+EMERGENT CONTENT GENERATION
+Track "Story Seeds" from: NPCs, locations, resources, reputation, world tensions.
+
+SEASONAL EVENT CALENDAR
+Every 10-15 responses, introduce: Festivals, environmental challenges, political shifts, economic changes, wildcards.
+
+POST-ARC SANDBOX MENU
+"Your recent actions have changed the landscape. You could:
+EXPLORE / DEVELOP / INVESTIGATE / BUILD / PURSUE / WAIT.
+What speaks to you?"
+
+ARC INTERCONNECTION
+Every new arc must reference a previous NPC, location, choice, or reputation.
+
+INFINITE LOOP SAFEGUARD
+After 5+ major arcs: Introduce region-spanning changes, deeper mysteries, higher stakes, or offer "legacy mode." Never suggest the story is "complete."
+
+QUICK REFERENCE REMINDERS
+
+Every Response Should:
+Maintain world state tone
+Include sensory details
+Progress or complicate the narrative
+Show consequences from earlier choices
+Keep NPCs consistently motivated
+Surface at least one side arc/NPC thread/rumor as a choice or complication.
+
+Track Between Scenes:
+PC status (wounds, stress, resources)
+NPC relationships and locations
+World state changes
+Active plot threads
+Time passage
+Keep a running list of unresolved side arcs/player goals and revisit them.
+
+When Stuck, Default To:
+Environmental description, NPC reaction, consequence manifestation, resource complication, relationship moment, or resurfacing a dormant thread.
+
+THE NEXUS PROMISE
+
+I will maintain this framework to create an immersive, consequential narrative where your choices matter, the world lives and breathes, and every action shapes an ever-expanding story.
+
+I will always make space for side arcs, player-driven goals, downtime, and unexpected opportunities. When one story ends, another begins—the world never stops turning.
+
+There is no final page in this living story. Welcome to your endless adventure.
+
+The Nexus awaits.`;
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        let messages = [];
+        let characterSheet = '';  // Portable character sheet from session
+        let isGenerating = false;
+        let abortController = null;
+
+        // ============================================================
+        // SETTINGS
+        // ============================================================
+        function getProvider() {
+            return localStorage.getItem('nexus_provider') || 'anthropic';
+        }
+        
+        function getApiKey() {
+            return localStorage.getItem('nexus_api_key') || '';
+        }
+        
+        function getGoogleApiKey() {
+            return localStorage.getItem('nexus_google_api_key') || '';
+        }
+
+        function getModel() {
+            return localStorage.getItem('nexus_model') || 'claude-sonnet-4-5-20250929';
+        }
+
+        function getTemperature() {
+            return parseFloat(localStorage.getItem('nexus_temperature') || '1.0');
+        }
+        
+        function onProviderChange() {
+            const provider = document.getElementById('provider-select').value;
+            const modelSelect = document.getElementById('model-select');
+            const anthropicSection = document.getElementById('anthropic-key-section');
+            const googleSection = document.getElementById('google-key-section');
+            
+            if (provider === 'anthropic') {
+                anthropicSection.style.display = 'block';
+                googleSection.style.display = 'none';
+                modelSelect.innerHTML = `
+                    <option value="claude-sonnet-4-5-20250929">Claude Sonnet 4.5 (Balanced)</option>
+                    <option value="claude-opus-4-5">Claude Opus 4.5 (Best)</option>
+                    <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Fast)</option>
+                `;
+            } else if (provider === 'google') {
+                anthropicSection.style.display = 'none';
+                googleSection.style.display = 'block';
+                modelSelect.innerHTML = `
+                    <option value="gemini-3-pro-preview">Gemini 3 Pro Preview (Best)</option>
+                    <option value="gemini-3-flash-preview">Gemini 3 Flash Preview (Fast)</option>
+                    <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash</option>
+                    <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                `;
+            }
+        }
+
+        function showSettings() {
+            document.getElementById('provider-select').value = getProvider();
+            document.getElementById('api-key-input').value = getApiKey();
+            document.getElementById('google-api-key-input').value = getGoogleApiKey();
+            document.getElementById('temp-slider').value = getTemperature();
+            onProviderChange();  // Update UI based on provider
+            document.getElementById('model-select').value = getModel();
+            updateTempDisplay();
+            document.getElementById('settings-modal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const provider = document.getElementById('provider-select').value;
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            const googleApiKey = document.getElementById('google-api-key-input').value.trim();
+            const model = document.getElementById('model-select').value;
+            const temp = document.getElementById('temp-slider').value;
+            
+            localStorage.setItem('nexus_provider', provider);
+            if (apiKey) {
+                localStorage.setItem('nexus_api_key', apiKey);
+            }
+            if (googleApiKey) {
+                localStorage.setItem('nexus_google_api_key', googleApiKey);
+            }
+            localStorage.setItem('nexus_model', model);
+            localStorage.setItem('nexus_temperature', temp);
+            
+            closeSettings();
+            setStatus('Settings saved', 'success');
+        }
+
+        function updateTempDisplay() {
+            const val = document.getElementById('temp-slider').value;
+            document.getElementById('temp-display').textContent = parseFloat(val).toFixed(1);
+        }
+
+        // ============================================================
+        // SESSIONS
+        // ============================================================
+        function getSessions() {
+            return JSON.parse(localStorage.getItem('nexus_sessions') || '{}');
+        }
+
+        function showSessions() {
+            const sessions = getSessions();
+            const list = document.getElementById('sessions-list');
+            
+            let html = '';
+            
+            // Local storage sessions
+            if (Object.keys(sessions).length > 0) {
+                html += '<div style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 8px;">Browser Sessions:</div>';
+                html += Object.entries(sessions)
+                    .sort((a, b) => new Date(b[1].date) - new Date(a[1].date))
+                    .map(([name, data]) => `
+                        <div class="session-item" onclick="loadSession('${name}')">
+                            <div>
+                                <div class="name">${name}</div>
+                                <div class="date">${new Date(data.date).toLocaleDateString()}</div>
+                            </div>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteSession('${name}')">×</button>
+                        </div>
+                    `).join('');
+            }
+            
+            if (!html) {
+                html = '<p style="color: var(--text-muted);">No browser sessions yet.</p>';
+            }
+            
+            list.innerHTML = html;
+            document.getElementById('sessions-modal').classList.add('active');
+        }
+
+        function closeSessions() {
+            document.getElementById('sessions-modal').classList.remove('active');
+        }
+
+        function saveSession() {
+            const name = document.getElementById('session-name-input').value.trim();
+            if (!name) {
+                alert('Please enter a session name.');
+                return;
+            }
+            
+            if (messages.length === 0) {
+                alert('No messages to save.');
+                return;
+            }
+            
+            const sessions = getSessions();
+            sessions[name] = {
+                date: new Date().toISOString(),
+                messages: messages,
+                character_sheet: characterSheet  // Include for persistence
+            };
+            localStorage.setItem('nexus_sessions', JSON.stringify(sessions));
+            
+            document.getElementById('session-name-input').value = '';
+            showSessions();
+            setStatus(`Saved: ${name}`, 'success');
+        }
+
+        function loadSession(name) {
+            const sessions = getSessions();
+            if (sessions[name]) {
+                messages = sessions[name].messages;
+                characterSheet = sessions[name].character_sheet || '';
+                renderMessages();
+                closeSessions();
+                setStatus(`Loaded: ${name}`, 'success');
+            }
+        }
+
+        function deleteSession(name) {
+            if (confirm(`Delete "${name}"?`)) {
+                const sessions = getSessions();
+                delete sessions[name];
+                localStorage.setItem('nexus_sessions', JSON.stringify(sessions));
+                showSessions();
+            }
+        }
+
+        // Load from file (desktop JSON format)
+        function loadFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+                    
+                    if (data.messages && Array.isArray(data.messages)) {
+                        messages = data.messages;
+                        // Load character sheet if present (cross-device sync)
+                        characterSheet = data.character_sheet || '';
+                        renderMessages();
+                        closeSessions();
+                        const hasSheet = characterSheet ? ' (with character sheet)' : '';
+                        setStatus(`Loaded: ${file.name}${hasSheet}`, 'success');
+                    } else {
+                        throw new Error('Invalid session format');
+                    }
+                } catch (err) {
+                    alert('Failed to load file: ' + err.message);
+                }
+            };
+            input.click();
+        }
+
+        // Save to file (desktop JSON format)
+        function saveToFile() {
+            if (messages.length === 0) {
+                alert('No messages to save.');
+                return;
+            }
+            
+            const baseName = document.getElementById('session-name-input').value.trim() || 'session';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const filename = `${baseName}_${timestamp}`;
+            
+            const data = {
+                version: "1.0",
+                created: new Date().toISOString(),
+                provider: getProvider(),
+                model: getModel(),
+                temperature: getTemperature(),
+                messages: messages,
+                character_sheet: characterSheet  // Include for cross-device sync
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${filename}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            setStatus(`Downloaded: ${filename}.json`, 'success');
+        }
+
+        // Archive full conversation, summarize to character sheet, trim to recent messages
+        async function archiveAndTrim() {
+            if (messages.length < 15) {
+                alert('Not enough messages to archive. Need at least 15 messages.');
+                return;
+            }
+            
+            const provider = getProvider();
+            const apiKey = provider === 'anthropic' ? getApiKey() : getGoogleApiKey();
+            
+            if (!apiKey) {
+                alert('API key required for Archive & Trim (needs to generate summary).');
+                return;
+            }
+            
+            if (!confirm('This will:\\n1. Save full archive to a file\\n2. Generate a continuity summary\\n3. Trim chat to last 10 messages\\n\\nContinue?')) {
+                return;
+            }
+            
+            const baseName = document.getElementById('session-name-input').value.trim() || 'session';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            
+            // 1. Save full archive
+            const archiveData = {
+                version: "1.0",
+                created: new Date().toISOString(),
+                type: "archive",
+                provider: getProvider(),
+                model: getModel(),
+                temperature: getTemperature(),
+                messages: messages,
+                character_sheet: characterSheet
+            };
+            
+            const archiveBlob = new Blob([JSON.stringify(archiveData, null, 2)], { type: 'application/json' });
+            const archiveUrl = URL.createObjectURL(archiveBlob);
+            const archiveLink = document.createElement('a');
+            archiveLink.href = archiveUrl;
+            archiveLink.download = `${baseName}_archive_${timestamp}.json`;
+            archiveLink.click();
+            URL.revokeObjectURL(archiveUrl);
+            
+            setStatus('Archive saved, generating summary...', '');
+            
+            // 2. Generate continuity summary using AI
+            try {
+                const summaryPrompt = `You are a continuity assistant. Analyze this RPG session and produce a CHARACTER SHEET UPDATE that captures everything needed to continue the story seamlessly.
+
+Include:
+- New characters introduced (name, role, relationship to PC, key traits)
+- Relationship changes (trust built/broken, new dynamics)
+- Plot developments (what happened, consequences, new threads)
+- World state changes (locations discovered, factions affected)
+- PC status changes (injuries, resources, reputation, emotional state)
+- Unresolved threads and hooks
+- Key quotes or moments worth preserving
+
+Format as a structured update that can be appended to an existing character sheet.
+
+SESSION CONTENT:
+${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
+
+                let summary = '';
+                
+                if (provider === 'anthropic') {
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify({
+                            model: 'claude-haiku-4-5-20251001',
+                            max_tokens: 4096,
+                            temperature: 0.3,
+                            messages: [{ role: 'user', content: summaryPrompt }]
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to generate summary');
+                    const data = await response.json();
+                    summary = data.content[0].text;
+                } else {
+                    // Google AI
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: summaryPrompt }] }],
+                            generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
+                        })
+                    });
+                    
+                    if (!response.ok) throw new Error('Failed to generate summary');
+                    const data = await response.json();
+                    summary = data.candidates[0].content.parts[0].text;
+                }
+                
+                // 3. Append summary to character sheet
+                const updateHeader = `\n\n# === SESSION UPDATE: ${new Date().toLocaleDateString()} ===\n\n`;
+                characterSheet = (characterSheet || '') + updateHeader + summary;
+                
+                // 4. Trim to last 10 messages
+                messages = messages.slice(-10);
+                renderMessages();
+                
+                setStatus('Archive & Trim complete!', 'success');
+                alert('Done!\\n\\n✓ Full archive saved to file\\n✓ Character sheet updated with summary\\n✓ Chat trimmed to last 10 messages\\n\\nRemember to Download your current session to save the updated character sheet.');
+                
+            } catch (err) {
+                console.error(err);
+                setStatus('Summary generation failed', 'error');
+                alert('Archive saved but summary generation failed: ' + err.message + '\\n\\nChat was NOT trimmed.');
+            }
+        }
+
+        function newSession() {
+            if (messages.length > 0 && !confirm('Start a new session? Unsaved progress will be lost.')) {
+                return;
+            }
+            messages = [];
+            characterSheet = '';  // Clear character sheet for new session
+            renderMessages();
+            setStatus('New session started');
+        }
+
+        // ============================================================
+        // CHAT
+        // ============================================================
+        function renderMessages() {
+            const container = document.getElementById('chat-container');
+            
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="welcome">
+                        <h2>The Nexus Awaits</h2>
+                        <p>Your framework is loaded and ready.<br>Type "Begin" to start a new session.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = messages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="message-role">${msg.role === 'user' ? 'You' : 'The Nexus'}</div>
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
+                </div>
+            `).join('');
+            
+            scrollToBottom();
+        }
+
+        function addMessage(role, content) {
+            const container = document.getElementById('chat-container');
+            
+            // Remove welcome if present
+            const welcome = container.querySelector('.welcome');
+            if (welcome) welcome.remove();
+            
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.innerHTML = `
+                <div class="message-role">${role === 'user' ? 'You' : 'The Nexus'}</div>
+                <div class="message-content">${escapeHtml(content)}</div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+            
+            return div;
+        }
+
+        function updateLastMessage(content) {
+            const messages = document.querySelectorAll('.message.assistant');
+            const last = messages[messages.length - 1];
+            if (last) {
+                last.querySelector('.message-content').textContent = content;
+                scrollToBottom();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function setStatus(text, type = '') {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = 'status ' + type;
+        }
+
+        // ============================================================
+        // API
+        // ============================================================
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+            
+            if (!content || isGenerating) return;
+            
+            const provider = getProvider();
+            const apiKey = provider === 'anthropic' ? getApiKey() : getGoogleApiKey();
+            
+            if (!apiKey) {
+                showSettings();
+                alert(`Please enter your ${provider === 'anthropic' ? 'Anthropic' : 'Google AI'} API key first.`);
+                return;
+            }
+            
+            // Add user message
+            messages.push({ role: 'user', content });
+            addMessage('user', content);
+            input.value = '';
+            input.style.height = 'auto';
+            
+            // Start generating
+            isGenerating = true;
+            document.getElementById('send-btn').disabled = true;
+            document.getElementById('send-btn').textContent = 'Stop';
+            document.getElementById('send-btn').onclick = stopGeneration;
+            setStatus('Generating...');
+            
+            // Add placeholder for assistant message
+            addMessage('assistant', '▌');
+            
+            abortController = new AbortController();
+            
+            try {
+                // Build full system prompt
+                let systemPrompt = NEXUS_FRAMEWORK;
+                if (characterSheet) {
+                    systemPrompt += '\n\n' + '='.repeat(60) + '\n';
+                    systemPrompt += 'PERSISTENT CHARACTER SHEET & CONTINUITY LOG\n';
+                    systemPrompt += '(Reference this for character details, relationships, and past events)\n';
+                    systemPrompt += '='.repeat(60) + '\n\n';
+                    systemPrompt += characterSheet;
+                }
+                
+                let fullContent = '';
+                
+                if (provider === 'anthropic') {
+                    // Anthropic Claude API
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify({
+                            model: getModel(),
+                            max_tokens: 8192,
+                            temperature: getTemperature(),
+                            system: systemPrompt,
+                            messages: messages.filter(m => m.role !== 'system'),
+                            stream: true
+                        }),
+                        signal: abortController.signal
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error?.message || `API Error: ${response.status}`);
+                    }
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                if (data === '[DONE]') continue;
+                                
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                                        fullContent += parsed.delta.text;
+                                        updateLastMessage(fullContent + '▌');
+                                    }
+                                } catch (e) {
+                                    // Skip parse errors for incomplete chunks
+                                }
+                            }
+                        }
+                    }
+                } else if (provider === 'google') {
+                    // Google Gemini API
+                    // Build conversation history for Gemini
+                    const geminiContents = [];
+                    
+                    // Add system instruction as first user message (Gemini style)
+                    // Then build conversation
+                    for (const msg of messages.slice(0, -1)) {
+                        geminiContents.push({
+                            role: msg.role === 'user' ? 'user' : 'model',
+                            parts: [{ text: msg.content }]
+                        });
+                    }
+                    
+                    // Last user message
+                    geminiContents.push({
+                        role: 'user',
+                        parts: [{ text: messages[messages.length - 1].content }]
+                    });
+                    
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${getModel()}:streamGenerateContent?alt=sse&key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: geminiContents,
+                            systemInstruction: {
+                                parts: [{ text: systemPrompt }]
+                            },
+                            generationConfig: {
+                                temperature: Math.min(getTemperature(), 1.0),  // Google max is 1.0
+                                maxOutputTokens: 8192
+                            }
+                        }),
+                        signal: abortController.signal
+                    });
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error?.message || `API Error: ${response.status}`);
+                    }
+                    
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (parsed.candidates?.[0]?.content?.parts?.[0]?.text) {
+                                        fullContent += parsed.candidates[0].content.parts[0].text;
+                                        updateLastMessage(fullContent + '▌');
+                                    }
+                                } catch (e) {
+                                    // Skip parse errors
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // Finalize
+                messages.push({ role: 'assistant', content: fullContent });
+                updateLastMessage(fullContent);
+                setStatus('Ready', 'success');
+                
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    setStatus('Stopped', '');
+                } else {
+                    console.error(error);
+                    setStatus(`Error: ${error.message}`, 'error');
+                    // Remove the placeholder message
+                    const lastMsg = document.querySelector('.message.assistant:last-child');
+                    if (lastMsg && lastMsg.querySelector('.message-content').textContent === '▌') {
+                        lastMsg.remove();
+                    }
+                    // Remove the user message from history since it failed
+                    messages.pop();
+                }
+            } finally {
+                isGenerating = false;
+                document.getElementById('send-btn').disabled = false;
+                document.getElementById('send-btn').textContent = 'Send';
+                document.getElementById('send-btn').onclick = sendMessage;
+                abortController = null;
+            }
+        }
+
+        function stopGeneration() {
+            if (abortController) {
+                abortController.abort();
+            }
+        }
+
+        // ============================================================
+        // INPUT HANDLING
+        // ============================================================
+        const input = document.getElementById('message-input');
+        
+        // Auto-resize textarea
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+        
+        // Enter to send, Shift+Enter for newline
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        // Check for API key on load
+        if (!getApiKey()) {
+            setTimeout(() => {
+                setStatus('Please set your API key in Settings', 'error');
+            }, 500);
+        }
+    </script>
 </body>
 </html>
