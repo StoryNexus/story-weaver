@@ -240,3 +240,5 @@ MIT License - Use freely, modify as needed.
 ## Credits
 
 Built for immersive AI storytelling. Framework designed for use with Claude (Anthropic) and Gemini (Google) language models.
+
+
