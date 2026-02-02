@@ -1843,7 +1843,11 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
                         })
                     });
                     
-                    if (!response.ok) throw new Error('Failed to generate summary');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        const errorMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                        throw new Error(`API Error: ${errorMsg}`);
+                    }
                     const data = await response.json();
                     summary = data.content[0].text;
                 } else {
@@ -1857,8 +1861,21 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
                         })
                     });
                     
-                    if (!response.ok) throw new Error('Failed to generate summary');
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        const errorMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
+                        throw new Error(`API Error: ${errorMsg}`);
+                    }
                     const data = await response.json();
+                    
+                    // Check for API-level errors even with 200 status
+                    if (data.candidates?.[0]?.finishReason === 'SAFETY' || data.promptFeedback?.blockReason) {
+                        throw new Error('Content blocked by safety filters. Try with a different session.');
+                    }
+                    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                        throw new Error('No summary generated. API returned: ' + JSON.stringify(data).substring(0, 200));
+                    }
+                    
                     summary = data.candidates[0].content.parts[0].text;
                 }
                 
