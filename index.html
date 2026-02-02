@@ -1669,6 +1669,8 @@ The Nexus awaits.
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
             const filename = `${baseName}_${timestamp}`;
             
+            setStatus('Preparing download...', 'success');
+            
             const data = {
                 version: "1.0",
                 created: new Date().toISOString(),
@@ -1679,15 +1681,34 @@ The Nexus awaits.
                 character_sheet: characterSheet  // Include for cross-device sync
             };
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `${filename}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
-            
-            setStatus(`Downloaded: ${filename}.json`, 'success');
+            try {
+                // Use setTimeout to avoid blocking the UI
+                setTimeout(() => {
+                    try {
+                        setStatus('Creating file...', 'success');
+                        const jsonString = JSON.stringify(data, null, 2);
+                        const blob = new Blob([jsonString], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `${filename}.json`;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        setTimeout(() => URL.revokeObjectURL(url), 100);
+                        
+                        setStatus(`Downloaded: ${filename}.json`, 'success');
+                    } catch (err) {
+                        console.error('Download error:', err);
+                        setStatus(`Download failed: ${err.message}`, 'error');
+                        alert(`Download failed: ${err.message}\n\nTry using Archive & Trim to reduce session size.`);
+                    }
+                }, 100);
+            } catch (err) {
+                console.error('Save preparation error:', err);
+                setStatus(`Save failed: ${err.message}`, 'error');
+                alert(`Save failed: ${err.message}`);
+            }
         }
 
         // Archive full conversation, summarize to character sheet, trim to recent messages
