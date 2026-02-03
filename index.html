@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Nexus</title>
+    
+    <!-- PDF.js library for PDF text extraction -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        // Configure PDF.js worker
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    </script>
+    
     <style>
         * {
             margin: 0;
@@ -426,6 +434,7 @@
         <div class="header-buttons">
             <button class="header-btn" onclick="showSettings()">⚙️</button>
             <button class="header-btn" onclick="showSessions()">💾</button>
+            <button class="header-btn" onclick="showReferenceDocs()">📚</button>
             <button class="header-btn" onclick="newSession()">✦</button>
         </div>
     </div>
@@ -510,6 +519,31 @@
             <div class="modal-buttons">
                 <button class="modal-btn secondary" onclick="closeSessions()">Close</button>
                 <button class="modal-btn primary" onclick="saveSession()">Save to Browser</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reference Documents Modal -->
+    <div class="modal-overlay" id="reference-docs-modal">
+        <div class="modal">
+            <h3>📚 Reference Documents</h3>
+            <p style="color: var(--text-dim); font-size: 0.9em; margin-bottom: 16px;">
+                Upload playbooks, rules, maps, or other reference materials that The Nexus can use during your game.
+            </p>
+            
+            <div class="reference-docs-list" id="reference-docs-list">
+                <p style="color: var(--text-muted);">No reference documents uploaded.</p>
+            </div>
+            
+            <div style="margin: 16px 0;">
+                <input type="file" id="ref-doc-input" accept=".txt,.md,.pdf" style="display: none;" onchange="uploadReferenceDoc(event)">
+                <button class="modal-btn secondary" style="width: 100%;" onclick="document.getElementById('ref-doc-input').click()">
+                    + Upload Document (.txt, .md, .pdf)
+                </button>
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeReferenceDocs()">Close</button>
             </div>
         </div>
     </div>
@@ -1421,6 +1455,7 @@ The Nexus awaits.
         // ============================================================
         let messages = [];
         let characterSheet = '';  // Portable character sheet from session
+        let referenceDocuments = [];  // User-uploaded reference docs (playbooks, rules, etc.)
         let currentStoryName = localStorage.getItem('nexus_story_name') || '';  // Persisted story name
         let isGenerating = false;
         let abortController = null;
@@ -1560,6 +1595,125 @@ The Nexus awaits.
             document.getElementById('sessions-modal').classList.remove('active');
         }
 
+        // ============================================================
+        // REFERENCE DOCUMENTS
+        // ============================================================
+        function showReferenceDocs() {
+            renderReferenceDocsList();
+            document.getElementById('reference-docs-modal').classList.add('active');
+        }
+
+        function closeReferenceDocs() {
+            document.getElementById('reference-docs-modal').classList.remove('active');
+        }
+
+        function renderReferenceDocsList() {
+            const list = document.getElementById('reference-docs-list');
+            
+            if (referenceDocuments.length === 0) {
+                list.innerHTML = '<p style="color: var(--text-muted);">No reference documents uploaded.</p>';
+                return;
+            }
+            
+            const html = referenceDocuments.map((doc, index) => `
+                <div class="session-item" style="cursor: default;">
+                    <div>
+                        <div class="name">${doc.name}</div>
+                        <div class="date">${(doc.content.length / 1024).toFixed(1)} KB</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteReferenceDoc(${index})">×</button>
+                </div>
+            `).join('');
+            
+            list.innerHTML = html;
+        }
+
+        async function uploadReferenceDoc(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            setStatus('Processing file...', '');
+            
+            try {
+                let content = '';
+                const fileName = file.name;
+                
+                if (file.name.endsWith('.pdf')) {
+                    // Extract text from PDF using PDF.js
+                    try {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+                        
+                        setStatus(`Extracting text from ${pdf.numPages} pages...`, '');
+                        
+                        // Extract text from all pages
+                        const textPromises = [];
+                        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                            textPromises.push(
+                                pdf.getPage(pageNum).then(async (page) => {
+                                    const textContent = await page.getTextContent();
+                                    const pageText = textContent.items
+                                        .map(item => item.str)
+                                        .join(' ');
+                                    return `\n--- Page ${pageNum} ---\n${pageText}`;
+                                })
+                            );
+                        }
+                        
+                        const pages = await Promise.all(textPromises);
+                        content = pages.join('\n\n');
+                        
+                        if (!content.trim()) {
+                            throw new Error('No text could be extracted from this PDF. It may be image-based or encrypted.');
+                        }
+                        
+                    } catch (pdfErr) {
+                        console.error('PDF extraction error:', pdfErr);
+                        throw new Error(`PDF extraction failed: ${pdfErr.message}`);
+                    }
+                } else {
+                    // Read as text for .txt and .md files
+                    content = await file.text();
+                }
+                
+                // Check if content is reasonable
+                if (content.length > 500000) {
+                    if (!confirm(`This file is ${(content.length / 1024).toFixed(1)} KB. Large files may slow down responses. Continue?`)) {
+                        event.target.value = '';
+                        setStatus('Upload cancelled', '');
+                        return;
+                    }
+                }
+                
+                // Add to reference documents
+                referenceDocuments.push({
+                    name: fileName,
+                    content: content,
+                    uploadedAt: new Date().toISOString()
+                });
+                
+                renderReferenceDocsList();
+                setStatus(`Added: ${fileName} (${(content.length / 1024).toFixed(1)} KB)`, 'success');
+                
+                // Reset file input
+                event.target.value = '';
+                
+            } catch (err) {
+                console.error('Upload error:', err);
+                setStatus('Upload failed', 'error');
+                alert('Failed to upload file: ' + err.message);
+                event.target.value = '';
+            }
+        }
+
+        function deleteReferenceDoc(index) {
+            if (confirm(`Delete "${referenceDocuments[index].name}"?`)) {
+                referenceDocuments.splice(index, 1);
+                renderReferenceDocsList();
+                setStatus('Reference document deleted', 'success');
+            }
+        }
+
         function saveSession() {
             const name = document.getElementById('session-name-input').value.trim();
             if (!name) {
@@ -1576,7 +1730,8 @@ The Nexus awaits.
             sessions[name] = {
                 date: new Date().toISOString(),
                 messages: messages,
-                character_sheet: characterSheet  // Include for persistence
+                character_sheet: characterSheet,  // Include for persistence
+                reference_documents: referenceDocuments  // Include reference docs
             };
             localStorage.setItem('nexus_sessions', JSON.stringify(sessions));
             
@@ -1590,6 +1745,7 @@ The Nexus awaits.
             if (sessions[name]) {
                 messages = sessions[name].messages;
                 characterSheet = sessions[name].character_sheet || '';
+                referenceDocuments = sessions[name].reference_documents || [];
                 renderMessages();
                 closeSessions();
                 setStatus(`Loaded: ${name}`, 'success');
@@ -1622,6 +1778,8 @@ The Nexus awaits.
                         messages = data.messages;
                         // Load character sheet if present (cross-device sync)
                         characterSheet = data.character_sheet || '';
+                        // Load reference documents if present
+                        referenceDocuments = data.reference_documents || [];
                         
                         // Extract story name from filename (remove timestamp and extension)
                         let storyName = file.name.replace('.json', '');
@@ -1637,7 +1795,8 @@ The Nexus awaits.
                         renderMessages();
                         closeSessions();
                         const hasSheet = characterSheet ? ' (with character sheet)' : '';
-                        setStatus(`Loaded: ${storyName}${hasSheet}`, 'success');
+                        const hasRefs = referenceDocuments.length > 0 ? ` + ${referenceDocuments.length} ref doc(s)` : '';
+                        setStatus(`Loaded: ${storyName}${hasSheet}${hasRefs}`, 'success');
                     } else {
                         throw new Error('Invalid session format');
                     }
@@ -1678,7 +1837,8 @@ The Nexus awaits.
                 model: getModel(),
                 temperature: getTemperature(),
                 messages: messages,
-                character_sheet: characterSheet  // Include for cross-device sync
+                character_sheet: characterSheet,  // Include for cross-device sync
+                reference_documents: referenceDocuments  // Include reference docs
             };
             
             try {
@@ -1753,7 +1913,8 @@ The Nexus awaits.
                 model: getModel(),
                 temperature: getTemperature(),
                 messages: messages,
-                character_sheet: characterSheet
+                character_sheet: characterSheet,
+                reference_documents: referenceDocuments
             };
             
             const archiveJson = JSON.stringify(archiveData, null, 2);
@@ -1903,6 +2064,14 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
             }
             messages = [];
             characterSheet = '';  // Clear character sheet for new session
+            
+            // Ask if user wants to keep reference docs for the new session
+            if (referenceDocuments.length > 0) {
+                if (!confirm(`Keep ${referenceDocuments.length} reference document(s) for the new session?`)) {
+                    referenceDocuments = [];
+                }
+            }
+            
             currentStoryName = '';  // Clear story name
             localStorage.removeItem('nexus_story_name');
             renderMessages();
@@ -2025,6 +2194,15 @@ ${messages.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n\n')}`;
                     systemPrompt += '(Reference this for character details, relationships, and past events)\n';
                     systemPrompt += '='.repeat(60) + '\n\n';
                     systemPrompt += characterSheet;
+                }
+                if (referenceDocuments.length > 0) {
+                    systemPrompt += '\n\n' + '='.repeat(60) + '\n';
+                    systemPrompt += 'REFERENCE DOCUMENTS\n';
+                    systemPrompt += '(Player-provided materials for this campaign - rules, playbooks, maps, etc.)\n';
+                    systemPrompt += '='.repeat(60) + '\n\n';
+                    referenceDocuments.forEach(doc => {
+                        systemPrompt += `--- ${doc.name} ---\n\n${doc.content}\n\n`;
+                    });
                 }
                 
                 let fullContent = '';
