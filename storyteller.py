@@ -629,7 +629,7 @@ There is no final page in this living story. Welcome to your endless adventure. 
             sidebar,
             variable=self.model_var,
             values=[
-                "claude-opus-4-20250514",
+                "claude-opus-4-6",
                 "claude-opus-4-5",
                 "claude-sonnet-4-5-20250929",
                 "claude-haiku-4-5-20251001"
@@ -846,7 +846,7 @@ There is no final page in this living story. Welcome to your endless adventure. 
         """Handle provider selection change."""
         if choice == "Anthropic":
             self.model_menu.configure(values=[
-                "claude-opus-4-20250514",
+                "claude-opus-4-6",
                 "claude-opus-4-5",
                 "claude-sonnet-4-5-20250929",
                 "claude-haiku-4-5-20251001"

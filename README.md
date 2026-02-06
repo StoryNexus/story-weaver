@@ -18,7 +18,7 @@
 
 ### Technical Features
 - **Save/Load Sessions**: Pick up any campaign where you left off
-- **Model Selection**: Claude Opus 4, Opus 4.5, Sonnet 4.5, Haiku 4.5
+- **Model Selection**: Claude Opus 4.6, Opus 4.5, Sonnet 4.5, Haiku 4.5
 - **Multi-Provider Support**: Anthropic Claude and Google Gemini
 - **Temperature Control**: Dial creativity up for wild sessions, down for consistency
 - **Mobile Server**: Play on your phone while running locally on desktop
@@ -133,7 +133,7 @@ Sessions are saved as JSON with full conversation history and metadata:
 
 | Model | Best For | Cost* |
 |-------|----------|------|
-| **Opus 4** | Most advanced, complex narratives, nuanced NPCs | ~$0.075/exchange |
+| **Opus 4.6** | Most advanced, complex narratives, nuanced NPCs | ~$0.075/exchange |
 | **Opus 4.5** | High quality, complex reasoning | ~$0.075/exchange |
 | **Sonnet 4.5** | Daily play, excellent balance of quality and cost | ~$0.015/exchange |
 | **Haiku 4.5** | Quick sessions, testing, budget-conscious | ~$0.002/exchange |
@@ -237,7 +237,7 @@ nexus/
 ## Troubleshooting
 
 **"Model error: claude-opus-4..."**
-- Make sure you're using the correct model string: `claude-opus-4-20250514`
+- The correct model string is: `claude-opus-4-6` (not 4-20250514 or other variants)
 
 **PDF upload fails**
 - Install PyPDF2: `pip install PyPDF2 --break-system-packages`
@@ -258,7 +258,7 @@ nexus/
 - Added Reference Documents with PDF support
 - Prose Calibration Engine
 - Enhanced anti-railroading safeguards
-- Claude Opus 4 support
+- Claude Opus 4.6 support
 - Improved download/save error handling
 
 **v2.0**
