@@ -1512,7 +1512,8 @@ class ReferenceDocsManager(ctk.CTkToplevel):
                 index = int(selection) - 1
                 if 0 <= index < len(self.docs):
                     removed = self.docs.pop(index)
-                    self._update_doc_list()\n                    messagebox.showinfo("Removed", f"Removed: {removed['name']}")
+                    self._update_doc_list()
+                    messagebox.showinfo("Removed", f"Removed: {removed['name']}")
                 else:
                     messagebox.showerror("Error", "Invalid selection")
             except ValueError:
