@@ -956,83 +956,60 @@ Streamlined Edition, Retuned for Dynamic Side Arcs and Player-Led Storytelling
         self._set_status("Generating summary...")
         self.update()
         
-        summary_prompt = f"""You are a continuity assistant for an ongoing RPG campaign. Your job is to capture the SOUL and FACTS of the session.
+        summary_prompt = f"""You are the Continuity Director for a high-fidelity roleplay campaign.
+Your goal is to freeze-frame the story so the next writer can pick up the EXACT facts and the EXACT feeling.
 
-CRITICAL RULES:
-1. DO NOT simply summarize actions. Capture the TONE, ATMOSPHERE, and SUBTEXT.
-2. Physical descriptions must be PRECISE (height, colors, scars).
-3. Names must be EXACT.
-4. **PRESERVE ESTABLISHED FACTS** from the existing data.
-5. Distinguish between what is KNOWN and what is merely SUSPECTED.
+CRITICAL FAILURE POINTS TO AVOID:
+1. Do not lose "Hard Data" (Classes, Session Numbers, Dates). These must be precise.
+2. Do not lose "Soft Data" (Micro-expressions, tension, smells).
+3. Do not summarize into generic RPG prose. Use the novelist's voice established in the text.
 
-EXISTING DATA (PRESERVE THIS):
-{self.character_sheet if self.character_sheet else 'No existing character sheet - this is the first session'}
-
-Your task: Update the sheet with NEW information from the conversation above while PRESERVING all existing facts that haven't changed.
-
-REQUIRED SECTIONS:
-
-## 0. NARRATIVE STYLE & PROSE ANCHOR
-- Current Genre/Tone: [e.g. Gritty Noir, High Fantasy, Cyberpunk Horror]
-- Prose Settings: [e.g. "Short sentences," "Purple prose," "Focus on sensory details"]
-- Active World State: [From the World State Engine: e.g. Dystopian/Rupture]
-
-## 1. THE SENSORY SNAPSHOT (The "Now")
-- Immediate Surroundings: [What does the PC see/smell/hear RIGHT NOW?]
-- Atmospheric Tension: [Is it quiet? Chaotic? Tense? Joyful?]
-- The Last Moment: [Exactly where the camera froze - preserving the cliffhanger]
-
-## 2. PC IMMUTABLE FACTS
-- Full Name:
-- Species/Race:
-- Physical Description: [EXACT height, build, distinguishing features, scars, etc.]
-- Age/Appearance Age:
-- Background Origin:
-
-## 3. PC CURRENT STATUS
-- Current Location:
-- Physical Condition: [injuries, scars gained THIS session, current health]
-- Mental/Emotional State: [Internal monologue, fears, current motivation]
-- Resources: [money, items, equipment - be specific with quantities]
-- Reputation Changes: [Who now views PC differently and why]
-
-## 4. GOLDEN QUOTES & MEMORIES
-- [Extract 1-2 verbatim quotes of dialogue that defined this session]
-- [Extract 1 verbatim sentence of description that captured the vibe]
-
-## 5. RELATIONSHIPS & SUBTEXT
-For each NPC mentioned in THIS session OR in existing sheet:
-- Name: [EXACT spelling]
-- Role/Occupation:
-- Physical Description: [if mentioned]
-- Relationship to PC: [ally/enemy/neutral, trust level]
-- **Subtext/Vibes**: [Do they trust the PC? Are they hiding something? Is there sexual tension? Fear?]
-- Last Known Location:
-- Promises/Agreements: [EXACT quote if NPC asked PC to do something or vice versa]
-- Current Status: [alive/dead/missing/unknown]
-
-## 6. MYSTERIES & OPEN LOOPS
-- Active Quests: [Objective and Status]
-- **Unresolved Suspicions**: [What does the PC suspect but not know? DO NOT RESOLVE THESE.]
-- **Secrets Kept**: [What is the PC hiding from the world?]
-
-## 7. WORLD STATE & LOCATIONS
-- New Locations Discovered: [name, description, how to get there]
-- Faction Changes: [which groups now view PC differently]
-- Major Events: [things that happened that affect the world]
-- Active Threats: [enemies hunting PC, time-sensitive dangers]
-
-## 8. TIMELINE OF THIS SESSION
-1. [Chronological event 1]
-2. [Chronological event 2]
-...
-
-IMPORTANT: If the existing character sheet says "As'mara is 6'3"" and this session doesn't show a height change, you MUST preserve "6'3"" exactly. Same for all immutable facts. Only update facts if the conversation explicitly changes them.
-
-DO NOT EDITORIALIZE. Extract facts only.
+EXISTING DATA:
+{self.character_sheet if self.character_sheet else 'No existing data'}
 
 SESSION CONTENT:
-{chr(10).join([f"{m['role'].upper()}: {m['content']}" for m in messages_to_trim])}"""
+{chr(10).join([f"{m['role'].upper()}: {m['content']}" for m in messages_to_trim])}
+
+---
+
+GENERATE A NEW CHARACTER SHEET USING THIS EXACT FORMAT:
+
+# === SESSION UPDATE: {datetime.now().strftime("%Y-%m-%d")} ===
+
+## 1. THE NARRATIVE LENS (The "Vibe")
+* **Narrative Voice:** [E.g. "Introspective, sensory-heavy. Focuses on small details like the temperature of coffee. Sentences are architectural."]
+* **Current Atmospheric Tension:** [E.g. "Safe but fragile. The quiet intimacy of a Saturday morning."]
+* **Pacing:** [E.g. "Glacial, savory, focused on micro-moments."]
+
+## 2. TECHNICAL CONTINUITY (Hard Facts)
+* **Current Date/Time in Story:** [e.g. Saturday, August 24th, 10:00 AM]
+* **Campaign Status:** [e.g. Session 8 completed. Session 9 upcoming.]
+* **Active Character Specs:**
+    * **PC:** [Name, Class, Key Stats]
+    * **NPCs:** [Name, Class/Role (BE SPECIFIC - e.g. "Archfey Warlock", NOT just "caster")]
+* **Inventory/Resources:** [Key items held, money, spell slots status]
+
+## 3. THE SENSORY SNAPSHOT (The "Now")
+* **Location:** [Exact room, lighting, smells. E.g. "Kitchen, smell of chives and coffee."]
+* **Physical State:** [Clothing, posture. E.g. "She is wearing his Star Wars shirt and mismatched socks."]
+* **The Cut:** [Exactly where the scene ended. E.g. "She just walked out the door."]
+
+## 4. ACTIVE MICRO-DYNAMICS (The Subtext)
+*For each key NPC, describe the internal state, not just external actions.*
+* **[NPC Name]:** [Relationship Status]
+    * *Internal State:* [What are they feeling but not saying?]
+    * *Recent Anchor:* [A specific shared moment. E.g. "The moment she confessed she is a size 7."]
+    * *Pending Tension:* [What is unresolved?]
+
+## 5. GOLDEN MOMENTS (Style Anchors)
+* [Quote 1]
+* [Quote 2]
+
+## 6. OPEN LOOPS
+* **Immediate:** [Next 10 minutes]
+* **Short Term:** [Next session/date]
+* **Long Game:** [Arc goals]
+"""
 
         try:
             response = self.client.messages.create(
@@ -1535,8 +1512,7 @@ class ReferenceDocsManager(ctk.CTkToplevel):
                 index = int(selection) - 1
                 if 0 <= index < len(self.docs):
                     removed = self.docs.pop(index)
-                    self._update_doc_list()
-                    messagebox.showinfo("Removed", f"Removed: {removed['name']}")
+                    self._update_doc_list()\n                    messagebox.showinfo("Removed", f"Removed: {removed['name']}")
                 else:
                     messagebox.showerror("Error", "Invalid selection")
             except ValueError:
