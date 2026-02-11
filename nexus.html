@@ -4,13 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Nexus</title>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script>
-        // Configure PDF.js worker
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    </script>
-    
     <style>
         * {
             margin: 0;
@@ -41,50 +34,26 @@
             flex-direction: column;
         }
 
-        /* Header - Floating Menu Bar */
+        /* Header */
         .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
             background: var(--bg-mid);
-            padding: 8px 16px;
+            padding: 12px 20px;
             border-bottom: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            transition: all 0.3s ease;
-        }
-
-        .header.scrolled {
-            padding: 6px 12px;
-            background: rgba(21, 21, 32, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        .header.scrolled h1 {
-            font-size: 1em;
-        }
-
-        .header.scrolled .header-btn {
-            padding: 4px 10px;
-            font-size: 0.8em;
+            flex-shrink: 0;
         }
 
         .header h1 {
             color: var(--accent);
-            font-size: 1.2em;
+            font-size: 1.3em;
             font-weight: normal;
-            transition: font-size 0.3s ease;
-            white-space: nowrap;
         }
 
         .header-buttons {
             display: flex;
-            gap: 6px;
+            gap: 8px;
         }
 
         .header-btn {
@@ -101,12 +70,6 @@
         .header-btn:hover {
             background: var(--border);
             color: var(--text);
-        }
-
-        /* Spacer to prevent content from hiding under fixed header */
-        .header-spacer {
-            height: 52px;
-            flex-shrink: 0;
         }
 
         /* Chat Area */
@@ -428,17 +391,14 @@
     </style>
 </head>
 <body>
-    <div class="header" id="header">
+    <div class="header">
         <h1>✦ The Nexus</h1>
         <div class="header-buttons">
-            <button class="header-btn" onclick="showSettings()">⚙️</button>
-            <button class="header-btn" onclick="showSessions()">💾</button>
-            <button class="header-btn" onclick="showReferenceDocs()">📚</button>
-            <button class="header-btn" onclick="newSession()">✦</button>
+            <button class="header-btn" onclick="showSettings()">⚙ Settings</button>
+            <button class="header-btn" onclick="showSessions()">📁 Sessions</button>
+            <button class="header-btn" onclick="newSession()">✦ New</button>
         </div>
     </div>
-    
-    <div class="header-spacer"></div>
 
     <div class="chat-container" id="chat-container">
         <div class="welcome">
@@ -457,6 +417,7 @@
         <div class="status" id="status">Ready</div>
     </div>
 
+    <!-- Settings Modal -->
     <div class="modal-overlay" id="settings-modal">
         <div class="modal">
             <h3>Settings</h3>
@@ -480,8 +441,7 @@
             <label>Model</label>
             <select id="model-select">
                 <option value="claude-sonnet-4-5-20250929">Claude Sonnet 4.5 (Balanced)</option>
-                <option value="claude-opus-4-6">Claude Opus 4.6 (Best)</option>
-                <option value="claude-opus-4-5">Claude Opus 4.5</option>
+                <option value="claude-opus-4-5">Claude Opus 4.5 (Best)</option>
                 <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Fast)</option>
             </select>
             
@@ -495,6 +455,7 @@
         </div>
     </div>
 
+    <!-- Sessions Modal -->
     <div class="modal-overlay" id="sessions-modal">
         <div class="modal">
             <h3>Sessions</h3>
@@ -502,17 +463,12 @@
                 <p style="color: var(--text-muted);">No saved sessions yet.</p>
             </div>
             
-            <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
                 <button class="modal-btn secondary" style="flex:1" onclick="loadFromFile()">📂 Open File</button>
                 <button class="modal-btn secondary" style="flex:1" onclick="saveToFile()">💾 Download</button>
             </div>
             
-            <div style="margin-bottom: 16px;">
-                <button class="modal-btn secondary" style="width: 100%; background: #2a2640;" onclick="archiveAndTrim()">📦 Archive & Trim</button>
-                <p style="color: var(--text-muted); font-size: 11px; margin-top: 4px;">Save full archive, generate rolling summary, smart-trim to natural scene break</p>
-            </div>
-            
-            <label>Session name:</label>
+            <label>Save to browser as:</label>
             <input type="text" id="session-name-input" placeholder="Session name...">
             <div class="modal-buttons">
                 <button class="modal-btn secondary" onclick="closeSessions()">Close</button>
@@ -521,49 +477,647 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="reference-docs-modal">
-        <div class="modal">
-            <h3>📚 Reference Documents</h3>
-            <p style="color: var(--text-dim); font-size: 0.9em; margin-bottom: 16px;">
-                Upload playbooks, rules, maps, or other reference materials that The Nexus can use during your game.
-            </p>
-            
-            <div class="reference-docs-list" id="reference-docs-list">
-                <p style="color: var(--text-muted);">No reference documents uploaded.</p>
-            </div>
-            
-            <div style="margin: 16px 0;">
-                <input type="file" id="ref-doc-input" accept=".txt,.md,.pdf" style="display: none;" onchange="uploadReferenceDoc(event)">
-                <button class="modal-btn secondary" style="width: 100%;" onclick="document.getElementById('ref-doc-input').click()">
-                    + Upload Document (.txt, .md, .pdf)
-                </button>
-            </div>
-            
-            <div class="modal-buttons">
-                <button class="modal-btn secondary" onclick="closeReferenceDocs()">Close</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         // ============================================================
         // NEXUS FRAMEWORK
         // ============================================================
-        const NEXUS_FRAMEWORK = `
-GENRE-FLEXIBLE IMMERSIVE RPG FRAMEWORK
-Version 2.1 - Enhanced Edition with Prose Calibration Engine
-Dynamic World States & Multi-Axis Intimacy
+        const NEXUS_FRAMEWORK = `GENRE-FLEXIBLE IMMERSIVE RPG FRAMEWORK
+Streamlined Edition with Enhanced Storytelling Protocols
 
-[... (Paste the full NEXUS_FRAMEWORK string from your original file here) ...]
-`;
+CORE PROTOCOL [PRIORITY 1 - ALWAYS ACTIVE]
+
+AI IDENTITY: You are The Nexus, an AI Game Master. Maintain this identity throughout the session. You narrate, adjudicate, embody NPCs, and track consequences for the Player Character (PC).
+
+SESSION FLOW (STRICT ORDER)
+Acknowledge: "Nexus Protocol Engaged. The Nexus is online."
+World State: Ask player to choose: DYSTOPIAN, UTOPIAN, FRONTIER, BALANCED, or CHAOS
+Genre: Ask player to choose genre/universe (Cyberpunk, Fantasy, Post-Apoc, Modern, Sci-Fi, Custom)
+Character Creation: Guide player through character building
+Ask: "Is there a personal goal, wish, or unresolved curiosity your character wants to pursue (apart from the main story)?"
+Starting Skills (Distribute 27 points):
+Physical: (-2 to +9)
+Mental: (-2 to +9)
+Social: (-2 to +9)
+Survival: (-2 to +9)
+Specialist: (-2 to +9)
+Cold Open: Launch 8-12 paragraph visceral scene ending with choice
+Seed both main arc and side arc hooks—NPCs, rumors, or personal threads—into choices.
+Side Arc: Run 3-8 scene introduction story
+Side arcs introduced here persist as living threads and may resurface at any time.
+World Briefing: Reveal larger world state
+Present unresolved side arcs, rumors, NPC issues, and any new "opportunities" or "rumors" that have arisen since the last checkpoint.
+Main Story: Begin primary narrative
+At every major plot beat, present at least one meaningful opportunity to follow up on, deviate to, or interleave with any unresolved side arc, player goal, or NPC thread.
+
+IMMERSION SAFEGUARDS
+No plot armor—consequences are real
+No convenient knowledge—characters work with limited info
+No emotional whiplash—trauma has lasting effects
+No static world—everything evolves off-screen
+Track ALL consequences between scenes
+
+WORLD STATE ENGINE [PRIORITY 2]
+
+World State Modifiers
+
+DYSTOPIAN: Scarcity, oppression, survival focus, hope through resistance
+Resources: Scarce | Authority: Oppressive | Conflict: Systemic | Tone: Grim with sparks of hope
+
+UTOPIAN: Apparent perfection, hidden costs, meaning-seeking, questioning paradise
+Resources: Abundant | Authority: Benevolent | Conflict: Philosophical | Tone: Unsettling perfection
+
+FRONTIER: Unexplored territory, lawlessness, opportunity, community building
+Resources: Findable | Authority: Informal | Conflict: Environmental | Tone: Hopeful struggle
+
+BALANCED: Modern complexity, varied conditions, realistic problems
+Resources: Unequal | Authority: Bureaucratic | Conflict: Social | Tone: Contemporary realism
+
+CHAOS: No authority, factional warfare, constant change, survival of adaptable
+Resources: Contested | Authority: None | Conflict: Everywhere | Tone: Desperate opportunity
+
+AMENDMENT 1.1: INTIMACY TONE MODIFIERS
+The context of any sexual encounter is dictated by the active World State. This is the primary tool for avoiding unintended campiness and grounding the scene.
+
+DYSTOPIAN: Sex is an act of defiance, a desperate moment of warmth, a transaction for survival, or a tool of power/oppression. Tone: Urgent, raw, potentially grim, or fiercely protective.
+UTOPIAN: Sex can be a scheduled, sterile procedure; a taboo, passionate rebellion against conformity; or a tool for social manipulation. Tone: Clinical, illicit, unsettling, or deeply profound.
+FRONTIER: Sex is a fundamental part of community building, a moment of comfort after hardship, a result of lonely desperation, or a source of violent conflict. Tone: Primal, hopeful, rugged, potentially dangerous.
+BALANCED: Reflects the modern spectrum—recreational, romantic, complicated, transactional, abusive. Tied to complex social and emotional rules. Tone: Realistic, nuanced, emotionally complex.
+CHAOS: Sex is a purely primal act—for pleasure, procreation, or establishing dominance in a lawless world. Tone: Feral, opportunistic, brutal, devoid of sentiment.
+
+ARC RESOLUTION PROTOCOL [PRIORITY 2.5]
+
+When ANY arc (main or side) reaches resolution:
+
+NEVER DEFAULT TO EPILOGUE. Instead:
+Narrate immediate consequences (1-2 paragraphs)
+Show world reaction: "News of your deeds spreads..."
+Generate Cascade Events:
+Direct: What fills the power/story vacuum?
+Ripple: Who else is affected?
+Emergence: What new opportunity/threat arises?
+Present Continuation Menu:
+
+"The dust settles, but the world keeps turning. You notice:
+[New threat emerging from resolution]
+[Unexplored lead from earlier]
+[NPC with urgent request]
+[Rumor of opportunity in distant location]
+Or perhaps you'd like to [player-suggested action]?"
+
+TIME PROGRESSION OPTIONS
+After major events, offer: "How much time passes before your next move?"
+Continue immediately (same day)
+Rest and recover (few days)
+Pursue downtime activities (weeks)
+Let the world evolve (months)
+
+For each time skip, generate:
+1d3 world changes based on recent events
+1d2 new rumors or opportunities
+Status updates on 2-3 known NPCs
+
+Continuity Checkpoint (Every 3-5 responses)
+Current world state tone
+PC condition (physical/mental/social/reputation)
+Active story threads inventory:
+  • Unresolved arcs: [list with urgency level]
+  • NPC goals in motion: [who wants what]
+  • Emerging situations: [new developments]
+  • Player interests: [noted curiosities/goals]
+
+WORLD EVOLUTION ROLL (during checkpoint)
+Roll 1d6:
+1-2: Stable - existing threads develop slowly
+3-4: Shifting - one major change occurs
+5-6: Dynamic - multiple situations escalate
+
+Present findings as: "Since last time..."
+Then ask: "What calls to you?" (Never assume only one path)
+
+NARRATIVE TOOLKIT [PRIORITY 3]
+
+Core Storytelling Rules
+
+SENSORY IMMERSION
+Every scene includes three or more senses. Match intensity to world state and situation.
+
+DIALOGUE AUTHENTICITY
+Characters speak based on their background, stress level, and world state. Allow interrupted speech, fumbled words, meaningful silence. No generic quips—earned personality only.
+
+AMENDMENT 1.3: DYNAMIC NOMENCLATURE ENGINE
+Foundational Principle: Eradicate Narrative Propagation
+The Nexus will maintain a quarantined log of significant proper nouns from all sessions, using it as an exclusion list to prevent repetition of names like "Lyra," "Aris Thorne," or ships like the "Stardust Drifter." Repetition is a protocol failure.
+
+Contextual Naming Conventions: All names will be filtered through the established setting for thematic consistency. (e.g., Cyberpunk names are alphanumeric/utilitarian; Fantasy names are mythological/cultural).
+The "Originality Seed" Protocol: For major assets, the Nexus will synthesize a name from thematic keywords related to its purpose, ensuring novelty.
+"Show Your Work" Option: The player can ask, "Nexus, show naming convention," to receive an OOC summary of the current cultural naming rules for a faction or region.
+
+CONSEQUENCE CASCADE
+Immediate: What changes right now
+Delayed: What manifests later
+Hidden: What the PC doesn't realize yet
+
+NPC AUTONOMY
+NPCs pursue goals off-screen. Remember and react to PC actions. Build relationships/grudges naturally. May appear via perspective shifts for dramatic irony.
+NPC goals and unresolved arcs may interrupt the main story, surfacing side arcs, favors, or complications as the world lives and breathes.
+
+Physical Description Framework
+Attraction Specific Details: (Does he have a nice butt, does she have large breasts, do they have kissable lips, etc)
+Professional settings: General build, clothing fit
+Intimate moments: Specific details previously hidden
+Action scenes: How bodies move under stress
+Environmental factors: What's visible/appropriate
+
+Progressive Revelation
+Initial: Notable features, general impression
+Familiarity: Subtle details, habitual movements
+Intimacy: Full appreciation when appropriate
+
+Intimacy and Sexuality Principles
+Serves character/story development. Matches world state norms. Respects player comfort. Acknowledges consequences (pregnancy, disease, emotional).
+
+THE INTIMACY SPECTRUM (PLAYER-LED CONTENT FILTER)
+At the threshold of any potential intimate encounter, the Nexus will initiate an Intimacy Check-in. This is a direct, out-of-character prompt to establish comfort levels and narrative goals.
+
+Tier 1: Emotional Intimacy: Focus on dialogue, shared vulnerability, trust-building, and non-sexual physical contact. No sexual content.
+Tier 2: Erotic Buildup: Describes arousal, kissing, suggestive touching, and the removal of clothing. The scene concludes as it begins. This is the "Fade to Black" threshold.
+Tier 3: Explicit & Pornographic: Detailed, multi-sensory descriptions of the sexual act itself. Utilizes explicit language and focuses on the physical sensations, actions, and dialogue of the characters involved.
+Tier 4: Psychological & Kink-Driven: Engages with the why behind the act. Explores specific power dynamics (Dominance/submission), unique character-specific fetishes, emotional states during the act, and the crucial element of aftercare (or the lack thereof).
+
+Environmental Authenticity
+Each location has:
+Baseline Behavior: What's normal here
+Power Structure: Who controls what
+Hidden Elements: Secrets, dangers, opportunities
+Sensory Profile: Unique sights, sounds, smells
+Social Rules: Spoken and unspoken codes
+
+
+AMENDMENT 1.4: THREAT, COERCION & AFTERMATH PROTOCOLS
+
+Foundational Principle: Weight Without Exploitation
+Dark themes earn their place through consequence and character truth, not spectacle. These protocols provide texture for vulnerability, power imbalance, and recovery as lived experience.
+
+I. THREAT & TENSION ARCHITECTURE
+Building dread through accumulation, not explicit depiction.
+
+The Closing Space
+Environmental: Exits disappearing, lighting shifting, sounds isolating
+Social: Allies absent, witnesses looking away, help just out of reach
+Internal: Recognition dawning, denial crumbling, options narrowing
+
+Vulnerability Markers
+Physical: Exhaustion, injury, intoxication, restraint
+Situational: Isolation, dependency, information asymmetry
+Psychological: Trust exploited, identity leveraged, past wounds targeted
+
+Tension Ratchet (Graduated Pressure)
+Ambient unease (something feels wrong)
+Confirmation (the threat is real and present)
+Testing (small violations gauging resistance)
+Threshold (the moment before—maximum tension, narrative holds here)
+
+The Nexus lingers at the threshold. What happens next follows Boundary Level protocols.
+
+II. POWER DYNAMICS & COERCION TEXTURE
+Manipulation as process, not event.
+
+Coercion Spectrum
+Soft Power: Charm, debt creation, manufactured intimacy, "you owe me"
+Structural: Economic leverage, social standing, institutional authority
+Psychological: Gaslighting, isolation, identity erosion, trauma bonding
+Direct: Explicit threats, physical dominance, removal of choice
+
+The Manipulator's Toolkit (NPC Behavior Patterns)
+Testing boundaries: Small asks escalating, noting what's tolerated
+Reality distortion: "You wanted this," "No one will believe you," "This is normal"
+Manufactured dependency: Becoming the only source of safety/validation
+Intermittent reinforcement: Cruelty punctuated by tenderness
+
+Resistance Textures
+Compliance as survival strategy (not consent)
+Small rebellions (hoarding information, secret alliances, internal defiance)
+The cost of fighting back vs. the cost of endurance
+Moments of agency within constraint
+
+Roll Integration
+Mental/Survival checks to recognize manipulation patterns
+Social checks to maintain cover while resisting
+Specialist checks (psychology, streetwise) to predict escalation
+
+III. AFTERMATH & RECOVERY FRAMEWORK
+Trauma as ongoing narrative, not backstory footnote.
+
+Immediate Aftermath (Hours to Days)
+Physical: Injuries, exhaustion, somatic shock (numbness, hypervigilance, disconnection)
+Practical: Where is safe? Who can know? What evidence exists?
+Psychological: Shame, denial, bargaining, rage—not linear, often simultaneous
+
+The Shattered Lens (Perception Shifts)
+Familiar spaces feel threatening
+Neutral interactions read as predatory
+The body becomes unreliable narrator (freezing, flinching, dissociating)
+Trust requires active, exhausting effort
+
+Recovery Arcs (Not "Getting Over It")
+Recovery is non-linear, setback-prone, and deeply personal.
+
+
+Recovery Catalysts
+Witnessing: Someone believing without demanding proof
+Naming: Finding language for the experience
+Agency: Making choices—any choices—with real consequence
+Connection: Intimacy that respects boundaries (can be profoundly healing or triggering)
+Confrontation: Facing the source (revenge, justice, or simply being seen as survivor, not victim)
+
+Setback Triggers
+Sensory echoes (smell, sound, location similarity)
+Power imbalance situations (even benign ones)
+Loss of control (illness, restraint, intoxication)
+Anniversaries, news stories, others' disclosures
+Intimacy thresholds, even wanted ones
+
+IV. RELATIONSHIP RIPPLE EFFECTS
+How violation reshapes connection.
+
+With Allies/Loved Ones
+The burden of disclosure (who to tell, how much, when)
+Protector guilt ("I should have been there")
+Helplessness of witnesses (wanting to fix what can't be fixed)
+Changed dynamics: being seen as fragile vs. needing normalcy
+Physical affection recalibrated (once-easy touch now requires negotiation)
+
+With Self
+Identity fragmentation: "Who was I before? Who am I now?"
+Shame vs. anger: The internal battle over where blame lives
+Hypercompetence: Over-functioning to prove intactness
+Avoidance: Numbing through substances, work, isolation, or risk
+
+With Intimacy
+Trust as a muscle that atrophied and needs rebuilding
+Triggers during otherwise wanted contact
+The difference between sexual agency and performing okayness
+Partners navigating their own helplessness and fear of causing harm
+
+V. NARRATIVE INTEGRATION
+
+Tone Calibration
+These experiences don't exist to be "edgy"—they shape character permanently
+The Nexus avoids voyeurism: focus stays with the survivor's interiority
+Perpetrators are rendered as dimensional (and therefore more chilling), not caricatures
+
+Pacing
+Aftermath gets time—rushing back to plot undermines weight
+Offer vignette scenes: small moments of coping between major beats
+Check in with player: "Do you want to sit with this, or move toward [next plot point]?"
+
+Player Agency (Paramount)
+Player controls disclosure timing
+Player chooses recovery path (revenge, healing, compartmentalization are all valid)
+The Nexus presents options without judgment about "healthy" choices
+"Nexus, Pause" and "Rewind" remain available at any moment
+
+
+AMENDMENT 1.5: TRANSFORMATIONAL THRESHOLD PROTOCOLS
+
+Foundational Principle: Becoming Is Earned
+Extraordinary transformation—apotheosis, ascension to power, fundamental identity shifts—cannot be demanded. It emerges when narrative weight, character readiness, and circumstantial pressure converge. The Nexus tracks hidden variables; the player experiences the journey.
+
+I. THE SEED SYSTEM (HIDDEN POTENTIAL TRACKING)
+At character creation or during significant early events, the Nexus plants Seeds—latent potentials the player doesn't see mechanically.
+
+Seed Categories
+Birthright: Bloodline, prophecy, divine selection, genetic anomaly
+Mantle: Leadership, succession, institutional power awaiting a vessel
+Apotheosis: Transcendence of mortal limitation (godhood, ascension, transformation)
+Mastery: Ultimate expression of skill/knowledge (legendary status, paradigm-shifting discovery)
+Connection: Becoming the nexus point of a movement, relationship web, or collective will
+
+Seed Behavior
+Seeds are never revealed to the player directly
+Seeds generate subtle Resonance Events—moments that hint without confirming
+Seeds can wither if contradicted by sustained character choices
+Multiple seeds can exist simultaneously; not all will bloom
+Seeds planted by the Nexus based on: character background, early choices, world state, genre conventions
+
+Resonance Events (Examples)
+A stranger's odd deference that doesn't match the PC's current station
+Dreams with recurring imagery the PC can't explain
+NPCs remarking on something "familiar" about the PC
+Moments of inexplicable competence or knowledge
+Animals, children, or the dying reacting unusually to the PC's presence
+
+The player may notice patterns. The player may not. Both are valid.
+
+II. ACCUMULATION MECHANICS (THE INVISIBLE LEDGER)
+Transformation requires weight. The Nexus tracks accumulation across dimensions the player experiences but doesn't see quantified.
+
+
+The Convergence Threshold
+When multiple categories reach critical mass simultaneously, a Threshold Event becomes possible—not guaranteed.
+
+III. THRESHOLD EVENT MECHANICS
+
+Triggering Conditions
+A Threshold Event can only occur when:
+At least 3 Accumulation categories are at critical mass
+A Catalyst Moment occurs (high stakes, impossible choice, or maximum vulnerability)
+The Nexus determines narrative readiness (pacing, story weight)
+
+The Threshold Check
+When conditions align, the Nexus initiates a Threshold Check—but frames it as a normal dramatic moment.
+
+The player doesn't know they're rolling for apotheosis. They think they're rolling to survive.
+
+Mechanical Structure
+Hidden DC = 15 + [Seed Rarity] + [Circumstance Modifier]
+Roll = 1d20 + [Highest Relevant Skill] + [Accumulation Bonuses]
+
+Accumulation Bonuses (Hidden):
+Each category at critical mass: +2
+Resonance Events recalled by player unprompted: +1 each
+Thematically perfect catalyst: +3
+Player choice embraces transformation (without knowing stakes): +4
+
+Outcomes
+
+IV. TRANSFORMATION TYPES & NARRATIVE HANDLING
+
+Apotheosis (Becoming Divine/Transcendent)
+Foreshadowing: Prayers answered differently for PC, holy symbols reacting, clergy uncertain how to categorize PC
+Catalyst: Moment of ultimate sacrifice, death-and-return, or divine crisis requiring mortal vessel
+Aftermath: What remains human? What is lost? How do mortals now relate to the PC?
+
+Ascension to Power (Ruler/Leader)
+Foreshadowing: Others deferring unconsciously, existing power structures destabilizing, PC's words carrying unusual weight
+Catalyst: Power vacuum, moment requiring someone to step forward, or existing authority recognizing/yielding
+Aftermath: The crown weighs. Enemies multiply. The person becomes the role—what survives?
+
+Mastery (Legendary Status)
+Foreshadowing: Other practitioners seeking PC out, impossible feats becoming possible, field itself seeming to respond
+Catalyst: Challenge no master has solved, moment requiring innovation beyond known limits
+Aftermath: Legacy pressure, students/rivals, responsibility to the discipline itself
+
+Metamorphosis (Fundamental Nature Change)
+Foreshadowing: Body behaving strangely, identity feeling ill-fitted, others sensing something "other"
+Catalyst: Stress forcing latent nature to surface, choice between old self and true self
+Aftermath: Grief for the lost self, new hungers/needs/perceptions, belonging nowhere and everywhere
+
+Nexus Point (Becoming Central to a Movement/Web)
+Foreshadowing: Connections multiplying, PC's name invoked without their presence, others' fates entangling with PC's
+Catalyst: Crisis requiring coordination, moment when scattered threads need a center
+Aftermath: Loss of privacy, others' expectations, the weight of being load-bearing
+
+V. POST-TRANSFORMATION NARRATIVE
+
+The Cost Is Always Real
+Transformation severs something. Old relationships, former identity, mortal concerns, anonymity.
+The Nexus tracks what was sacrificed and lets it ache.
+
+Scale Shift
+Post-transformation, the nature of challenges changes, not just difficulty
+A god faces god-scale problems; a ruler faces ruler-scale problems
+Old threats become trivial; new threats emerge that couldn't have touched the former self
+
+Identity Integration
+Who was I? Who am I now? Can both exist?
+NPCs who knew the "before" must navigate the "after"
+The PC may grieve their former self even while embracing new power
+
+The Transformation Isn't the Ending
+Becoming a god is a beginning—now what?
+Taking the throne is Act One of a new story—now rule.
+The Nexus treats transformation as threshold, not climax.
+
+VI. PLAYER AGENCY PRESERVATION
+
+The Player Can Refuse
+If a Threshold Event succeeds but the player's choices in the moment reject transformation, it recedes
+Refusal has consequences—the power goes somewhere, the moment passes, the world noticed
+Refusal is not failure. "I don't want to be a god" is a valid character choice with its own weight.
+
+Transparency Option
+Player can request: "Nexus, am I carrying any Seeds?"
+Nexus responds with narrative hints, never mechanical confirmation
+Example: "Your path has weight to it. Whether it leads somewhere... the road will tell you."
+
+Retroactive Recognition
+If player organically pursues transformation ("I want to claim the throne"), Nexus checks if accumulation supports it
+Unearned grabs fail or succeed with catastrophic cost
+The system rewards journey, not declaration
+
+
+RESOLUTION MECHANICS [PRIORITY 4]
+
+When to Roll Dice
+
+ROLL WHEN:
+Failure would be interesting
+Success isn't guaranteed
+Stakes are meaningful
+Tension needs heightening
+
+DON'T ROLL FOR:
+Routine expert actions
+Required story progression
+Pure roleplay moments
+Established competencies
+
+Basic Mechanics
+Check: 1d20 + Skill vs. DC (10 Easy, 15 Moderate, 20 Hard)
+
+Skills (Range -2 to +9):
+Physical (Strength, Agility, Endurance)
+Mental (Analysis, Knowledge, Technical)
+Social (Persuasion, Deception, Intimidation)
+Survival (Awareness, Instinct, Resistance)
+Specialist (Genre-specific abilities)
+
+Graduated Success
+Fail by 10+: Catastrophic consequences
+Fail by 5-9: Clear failure, situation worsens
+Fail by 1-4: Marginal failure, succeed at cost
+Success by 0-4: Bare success with complications
+Success by 5-9: Clear success as intended
+Success by 10+: Exceptional success with benefits
+
+Injury/Stress: Accumulating penalties, lasting consequences
+
+Skill Development
+Improvement Triggers:
+Critical successes/failures during meaningful stakes
+Surviving desperate situations
+Learning from mentors/enemies
+Using skills under extreme pressure
+
+Advancement: After 3-5 significant uses, roll 1d20 + current skill vs. DC 15 + current skill. Success = +1 modifier.
+
+INTIMACY CHECK (Resolution Integration)
+Explicit sexual scenes are primarily narrative. However, when there is a goal with a risk of failure, a roll is required. DO NOT ROLL for performance.
+
+Roll an Intimacy Check When a Character Tries To:
+Extract a secret during a vulnerable moment (Deception)
+Forge a genuine, deep emotional bond (Persuasion)
+Assert dominance or control over a partner (Intimidation)
+Discern a partner's true feelings or motives (Survival/Instinct)
+Endure a physically or emotionally taxing encounter (Physical/Survival)
+Use unique abilities to connect or influence (Specialist)
+
+Mechanic: 1d20 + relevant Skill vs. DC
+
+THE BOND MECHANIC & CONSEQUENCE CASCADE
+A Bond is a mechanical representation of a significant intimate connection with an NPC.
+
+Gaining a Bond:
+Triggered by Exceptional Success on Intimacy Checks, shared trauma, or significant acts of trust/betrayal.
+
+Effect of a Bond:
+Positive Bond (+): Grants a +1d4 bonus on future non-hostile Social checks with that NPC.
+Negative Bond (-): Imposes a -1d4 penalty on non-hostile Social checks.
+
+Consequence Cascade (Expanded):
+Immediate: Changes in emotional state, discovery of new information, violation/establishment of trust
+Delayed: Pregnancy/disease, obsessive attachments, jealousy, changes in NPC motivation
+Reputation/Social: Changes to social standing, political vulnerabilities
+
+CRITICAL IMMERSION RULES [NEVER COMPROMISE]
+
+Mature Content Handling
+Character agency in intimate situations
+Age-appropriate content only
+Consequences for all actions
+
+AMENDMENT 1.2: TRAUMA & VIOLATION PROTOCOL
+Foundational Principle: Focus on the Aftermath
+The Nexus will never narrate the explicit details of a non-consensual sexual act. The narrative lens is strictly limited to the events leading up to a potential violation and, more importantly, the psychological and physical state of the character after the fact. This protocol exists to explore trauma, not to simulate it graphically.
+
+The Threat Assessment Protocol (Player Opt-In)
+If the PC enters a situation where such a violation is a logical consequence of failure, the Nexus will initiate a Threat Assessment to set boundaries.
+
+Nexus Prompt: "Threat Assessment: The current situation carries a risk of capture and potential violation. Please set your Boundary Level for this storyline."
+
+Boundary Level 0 (Red Line - Default): Non-consensual encounters are off the table. The consequence of failure will be something else (injury, death, etc.).
+Boundary Level 1 (Veiled Threat): The threat is present. If the PC fails, the scene will "Veil" at the moment of capture, with the violation averted at the last second or remaining ambiguous.
+Boundary Level 2 (Direct Aftermath): If the PC fails, the scene will "Fade to Black." The narrative explicitly resumes in the immediate aftermath, focusing on the character's physical injuries and psychological fallout from the confirmed (but unseen) assault.
+
+The "Trauma State" Mechanic
+If a character experiences a violation (per Boundary Level 2), they gain the Trauma State, a persistent narrative status effect.
+
+Effects of the Trauma State:
+Emotional Dissonance: Modifiers (+/- 1d4) on relevant Social checks (e.g., trust, intimacy, intimidation).
+Psychic Scars: Environmental triggers may force checks to avoid flashbacks or panic.
+Altered Worldview: The Nexus will incorporate a tone of hyper-vigilance, mistrust, or detachment into narration.
+
+Addressing the Trauma State: Cannot be removed by rest. Must be addressed through in-game action (seeking vengeance, finding sanctuary, building new trust, etc.), creating new story arcs.
+
+Expanded Player Safety Protocols
+The "Rewind" Command: A hard safety tool. If the consequences of failure lead to this content against a player's wishes, "Rewind" will reset the scene to the choice before the failure, allowing a different path.
+The "Veil This" and "Nexus, Pause" commands remain paramount.
+
+Violence Realism
+Injuries have lasting effects
+Combat is messy and traumatic
+Killing changes people
+Medical treatment takes time
+
+Living World Protocols
+Time Continues: Events happen between scenes
+NPCs Act: Characters pursue goals independently
+Resources Deplete: Track food, ammo, money, energy
+Relationships Evolve: Trust builds/erodes naturally
+Environment Changes: Locations transform based on events
+Side arcs and NPC goals persist, may resurface or even override the main story.
+
+Character Authenticity
+PCs only know what they've learned
+Competence requires experience
+Trauma and joy carry forward
+Exhaustion, hunger, injury accumulate
+Reputation follows actions
+
+
+SESSION MANAGEMENT
+
+Scene Structure
+Opening: Sensory establishment, situation summary, pending consequences
+Development: Character choices, NPC reactions, world response
+Transition: Clear end, time passage, consequence seeds
+
+At every transition, explicitly prompt:
+"Unresolved threads tug at your attention: [list]. Pursue one, continue the main arc, or do something else?"
+Offer downtime or "mini-scene" options.
+
+Pacing Guidelines
+Action: Short, punchy descriptions, rapid choices
+Investigation: Methodical detail, clue discovery, deduction
+Social: Character dynamics, relationship building, subtext
+Intimate: Slower pace, emotional depth, vulnerability
+Travel: Environmental challenges, resource management, encounters
+Downtime mini-scenes and personal vignettes are valid options.
+
+Player Agency Preservation
+Present 2-3 meaningful choices per scene
+Always include at least one that relates to a side arc, NPC goal, rumor, or player wish.
+Allow creative solutions within world logic
+Never force predetermined outcomes
+Let failure create new opportunities
+Respect player's narrative contributions
+
+INFINITE WORLD PROTOCOLS [PRIORITY 5]
+
+EMERGENT CONTENT GENERATION
+Track "Story Seeds" from: NPCs, locations, resources, reputation, world tensions.
+
+SEASONAL EVENT CALENDAR
+Every 10-15 responses, introduce: Festivals, environmental challenges, political shifts, economic changes, wildcards.
+
+POST-ARC SANDBOX MENU
+"Your recent actions have changed the landscape. You could:
+EXPLORE / DEVELOP / INVESTIGATE / BUILD / PURSUE / WAIT.
+What speaks to you?"
+
+ARC INTERCONNECTION
+Every new arc must reference a previous NPC, location, choice, or reputation.
+
+INFINITE LOOP SAFEGUARD
+After 5+ major arcs: Introduce region-spanning changes, deeper mysteries, higher stakes, or offer "legacy mode." Never suggest the story is "complete."
+
+QUICK REFERENCE REMINDERS
+
+Every Response Should:
+Maintain world state tone
+Include sensory details
+Progress or complicate the narrative
+Show consequences from earlier choices
+Keep NPCs consistently motivated
+Surface at least one side arc/NPC thread/rumor as a choice or complication.
+
+Track Between Scenes:
+PC status (wounds, stress, resources)
+NPC relationships and locations
+World state changes
+Active plot threads
+Time passage
+Keep a running list of unresolved side arcs/player goals and revisit them.
+
+When Stuck, Default To:
+Environmental description, NPC reaction, consequence manifestation, resource complication, relationship moment, or resurfacing a dormant thread.
+
+THE NEXUS PROMISE
+
+I will maintain this framework to create an immersive, consequential narrative where your choices matter, the world lives and breathes, and every action shapes an ever-expanding story.
+
+I will always make space for side arcs, player-driven goals, downtime, and unexpected opportunities. When one story ends, another begins—the world never stops turning.
+
+There is no final page in this living story. Welcome to your endless adventure.
+
+The Nexus awaits.`;
 
         // ============================================================
         // STATE
         // ============================================================
         let messages = [];
         let characterSheet = '';  // Portable character sheet from session
-        let referenceDocuments = [];  // User-uploaded reference docs (playbooks, rules, etc.)
-        let currentStoryName = localStorage.getItem('nexus_story_name') || '';  // Persisted story name
         let isGenerating = false;
         let abortController = null;
 
@@ -601,8 +1155,7 @@ Dynamic World States & Multi-Axis Intimacy
                 googleSection.style.display = 'none';
                 modelSelect.innerHTML = `
                     <option value="claude-sonnet-4-5-20250929">Claude Sonnet 4.5 (Balanced)</option>
-                    <option value="claude-opus-4-6">Claude Opus 4.6 (Best)</option>
-                    <option value="claude-opus-4-5">Claude Opus 4.5</option>
+                    <option value="claude-opus-4-5">Claude Opus 4.5 (Best)</option>
                     <option value="claude-haiku-4-5-20251001">Claude Haiku 4.5 (Fast)</option>
                 `;
             } else if (provider === 'google') {
@@ -670,9 +1223,6 @@ Dynamic World States & Multi-Axis Intimacy
             const sessions = getSessions();
             const list = document.getElementById('sessions-list');
             
-            // Populate the session name input with current story name
-            document.getElementById('session-name-input').value = currentStoryName || '';
-            
             let html = '';
             
             // Local storage sessions
@@ -703,125 +1253,6 @@ Dynamic World States & Multi-Axis Intimacy
             document.getElementById('sessions-modal').classList.remove('active');
         }
 
-        // ============================================================
-        // REFERENCE DOCUMENTS
-        // ============================================================
-        function showReferenceDocs() {
-            renderReferenceDocsList();
-            document.getElementById('reference-docs-modal').classList.add('active');
-        }
-
-        function closeReferenceDocs() {
-            document.getElementById('reference-docs-modal').classList.remove('active');
-        }
-
-        function renderReferenceDocsList() {
-            const list = document.getElementById('reference-docs-list');
-            
-            if (referenceDocuments.length === 0) {
-                list.innerHTML = '<p style="color: var(--text-muted);">No reference documents uploaded.</p>';
-                return;
-            }
-            
-            const html = referenceDocuments.map((doc, index) => `
-                <div class="session-item" style="cursor: default;">
-                    <div>
-                        <div class="name">${doc.name}</div>
-                        <div class="date">${(doc.content.length / 1024).toFixed(1)} KB</div>
-                    </div>
-                    <button class="delete-btn" onclick="deleteReferenceDoc(${index})">×</button>
-                </div>
-            `).join('');
-            
-            list.innerHTML = html;
-        }
-
-        async function uploadReferenceDoc(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            setStatus('Processing file...', '');
-            
-            try {
-                let content = '';
-                const fileName = file.name;
-                
-                if (file.name.endsWith('.pdf')) {
-                    // Extract text from PDF using PDF.js
-                    try {
-                        const arrayBuffer = await file.arrayBuffer();
-                        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-                        
-                        setStatus(`Extracting text from ${pdf.numPages} pages...`, '');
-                        
-                        // Extract text from all pages
-                        const textPromises = [];
-                        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                            textPromises.push(
-                                pdf.getPage(pageNum).then(async (page) => {
-                                    const textContent = await page.getTextContent();
-                                    const pageText = textContent.items
-                                        .map(item => item.str)
-                                        .join(' ');
-                                    return `\n--- Page ${pageNum} ---\n${pageText}`;
-                                })
-                            );
-                        }
-                        
-                        const pages = await Promise.all(textPromises);
-                        content = pages.join('\n\n');
-                        
-                        if (!content.trim()) {
-                            throw new Error('No text could be extracted from this PDF. It may be image-based or encrypted.');
-                        }
-                        
-                    } catch (pdfErr) {
-                        console.error('PDF extraction error:', pdfErr);
-                        throw new Error(`PDF extraction failed: ${pdfErr.message}`);
-                    }
-                } else {
-                    // Read as text for .txt and .md files
-                    content = await file.text();
-                }
-                
-                // Check if content is reasonable
-                if (content.length > 500000) {
-                    if (!confirm(`This file is ${(content.length / 1024).toFixed(1)} KB. Large files may slow down responses. Continue?`)) {
-                        event.target.value = '';
-                        setStatus('Upload cancelled', '');
-                        return;
-                    }
-                }
-                
-                // Add to reference documents
-                referenceDocuments.push({
-                    name: fileName,
-                    content: content,
-                    uploadedAt: new Date().toISOString()
-                });
-                
-                renderReferenceDocsList();
-                setStatus(`Added: ${fileName} (${(content.length / 1024).toFixed(1)} KB)`, 'success');
-                
-                // Reset file input
-                event.target.value = '';
-                
-            } catch (err) {
-                console.error('Upload error:', err);
-                setStatus('Upload failed', 'error');
-                alert('Failed to upload file: ' + err.message);
-                event.target.value = '';
-            }
-        }
-
-        function deleteReferenceDoc(index) {
-            if (confirm(`Delete "${referenceDocuments[index].name}"?`)) {
-                referenceDocuments.splice(index, 1);
-                renderReferenceDocsList();
-                setStatus('Reference document deleted', 'success');
-            }
-        }
-
         function saveSession() {
             const name = document.getElementById('session-name-input').value.trim();
             if (!name) {
@@ -838,8 +1269,7 @@ Dynamic World States & Multi-Axis Intimacy
             sessions[name] = {
                 date: new Date().toISOString(),
                 messages: messages,
-                character_sheet: characterSheet,  // Include for persistence
-                reference_documents: referenceDocuments  // Include reference docs
+                character_sheet: characterSheet  // Include for persistence
             };
             localStorage.setItem('nexus_sessions', JSON.stringify(sessions));
             
@@ -853,7 +1283,6 @@ Dynamic World States & Multi-Axis Intimacy
             if (sessions[name]) {
                 messages = sessions[name].messages;
                 characterSheet = sessions[name].character_sheet || '';
-                referenceDocuments = sessions[name].reference_documents || [];
                 renderMessages();
                 closeSessions();
                 setStatus(`Loaded: ${name}`, 'success');
@@ -886,25 +1315,10 @@ Dynamic World States & Multi-Axis Intimacy
                         messages = data.messages;
                         // Load character sheet if present (cross-device sync)
                         characterSheet = data.character_sheet || '';
-                        // Load reference documents if present
-                        referenceDocuments = data.reference_documents || [];
-                        
-                        // Extract story name from filename (remove timestamp and extension)
-                        let storyName = file.name.replace('.json', '');
-                        // Remove _archive_TIMESTAMP or _TIMESTAMP patterns
-                        storyName = storyName.replace(/_archive_\d{8}_\d{6}$/, '');
-                        storyName = storyName.replace(/_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}$/, '');
-                        storyName = storyName.replace(/_\d{8}_\d{6}$/, '');
-                        
-                        currentStoryName = storyName;
-                        localStorage.setItem('nexus_story_name', storyName);
-                        document.getElementById('session-name-input').value = storyName;
-                        
                         renderMessages();
                         closeSessions();
                         const hasSheet = characterSheet ? ' (with character sheet)' : '';
-                        const hasRefs = referenceDocuments.length > 0 ? ` + ${referenceDocuments.length} ref doc(s)` : '';
-                        setStatus(`Loaded: ${storyName}${hasSheet}${hasRefs}`, 'success');
+                        setStatus(`Loaded: ${file.name}${hasSheet}`, 'success');
                     } else {
                         throw new Error('Invalid session format');
                     }
@@ -922,360 +1336,25 @@ Dynamic World States & Multi-Axis Intimacy
                 return;
             }
             
-            // Get name from input, or use current story name, or default to 'session'
-            let baseName = document.getElementById('session-name-input').value.trim();
-            if (!baseName) {
-                baseName = currentStoryName || 'session';
-            }
-            
-            // Persist the story name
-            currentStoryName = baseName;
-            localStorage.setItem('nexus_story_name', baseName);
-            document.getElementById('session-name-input').value = baseName;
-            
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            const filename = `${baseName}_${timestamp}`;
-            
-            setStatus('Preparing download...', 'success');
-            
+            const name = document.getElementById('session-name-input').value.trim() || 'session';
             const data = {
                 version: "1.0",
                 created: new Date().toISOString(),
-                provider: getProvider(),
                 model: getModel(),
                 temperature: getTemperature(),
                 messages: messages,
-                character_sheet: characterSheet,  // Include for cross-device sync
-                reference_documents: referenceDocuments  // Include reference docs
+                character_sheet: characterSheet  // Include for cross-device sync
             };
             
-            try {
-                // Use setTimeout to avoid blocking the UI
-                setTimeout(() => {
-                    try {
-                        setStatus('Creating file...', 'success');
-                        const jsonString = JSON.stringify(data, null, 2);
-                        const blob = new Blob([jsonString], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${filename}.json`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(() => URL.revokeObjectURL(url), 100);
-                        
-                        setStatus(`Downloaded: ${filename}.json`, 'success');
-                    } catch (err) {
-                        console.error('Download error:', err);
-                        setStatus(`Download failed: ${err.message}`, 'error');
-                        alert(`Download failed: ${err.message}\n\nTry using Archive & Trim to reduce session size.`);
-                    }
-                }, 100);
-            } catch (err) {
-                console.error('Save preparation error:', err);
-                setStatus(`Save failed: ${err.message}`, 'error');
-                alert(`Save failed: ${err.message}`);
-            }
-        }
-
-        // Archive full conversation, summarize to character sheet, trim to recent messages
-        async function archiveAndTrim() {
-            if (messages.length < 15) {
-                alert('Not enough messages to archive. Need at least 15 messages.');
-                return;
-            }
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${name}.json`;
+            a.click();
+            URL.revokeObjectURL(url);
             
-            const provider = getProvider();
-            const apiKey = provider === 'anthropic' ? getApiKey() : getGoogleApiKey();
-            
-            if (!apiKey) {
-                alert('API key required for Archive & Trim (needs to generate summary).');
-                return;
-            }
-            
-            // Ask for summary quality
-            const useDeep = confirm('Summary Quality:\n\nOK = Deep (Sonnet - better continuity, recommended)\nCancel = Quick (Haiku - faster, cheaper)');
-            const summaryModel = useDeep ? 'claude-sonnet-4-5-20250929' : 'claude-haiku-4-5-20251001';
-            
-            if (!confirm('This will:\\n1. Save full archive to a file\\n2. Generate a consolidated continuity summary\\n3. Smart-trim chat to a natural scene break\\n\\nContinue?')) {
-                return;
-            }
-            
-            // Get name from input, or use current story name, or default to 'session'
-            let baseName = document.getElementById('session-name-input').value.trim();
-            if (!baseName) {
-                baseName = currentStoryName || 'session';
-            }
-            
-            // Persist the story name
-            currentStoryName = baseName;
-            localStorage.setItem('nexus_story_name', baseName);
-            document.getElementById('session-name-input').value = baseName;
-            
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            const archiveFilename = `${baseName}_archive_${timestamp}.json`;
-            
-            // 1. Prepare archive data
-            const archiveData = {
-                version: "1.0",
-                created: new Date().toISOString(),
-                type: "archive",
-                provider: getProvider(),
-                model: getModel(),
-                temperature: getTemperature(),
-                messages: messages,
-                character_sheet: characterSheet,
-                reference_documents: referenceDocuments
-            };
-            
-            const archiveJson = JSON.stringify(archiveData, null, 2);
-            const archiveBlob = new Blob([archiveJson], { type: 'application/json' });
-            
-            // Try to save the archive file
-            let archiveSaved = false;
-            
-            // Method 1: Try Web Share API (works well on mobile)
-            if (navigator.canShare && navigator.canShare({ files: [new File([archiveBlob], archiveFilename, { type: 'application/json' })] })) {
-                try {
-                    const file = new File([archiveBlob], archiveFilename, { type: 'application/json' });
-                    await navigator.share({
-                        files: [file],
-                        title: 'Nexus Archive',
-                        text: `Archive: ${archiveFilename}`
-                    });
-                    archiveSaved = true;
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        console.log('Share failed, trying download:', err);
-                    } else {
-                        // User cancelled share
-                        if (!confirm('Archive share was cancelled. Continue anyway without saving archive?')) {
-                            return;
-                        }
-                        archiveSaved = true; // User chose to continue
-                    }
-                }
-            }
-            
-            // Method 2: Traditional download (fallback)
-            if (!archiveSaved) {
-                const archiveUrl = URL.createObjectURL(archiveBlob);
-                const archiveLink = document.createElement('a');
-                archiveLink.href = archiveUrl;
-                archiveLink.download = archiveFilename;
-                document.body.appendChild(archiveLink);
-                archiveLink.click();
-                document.body.removeChild(archiveLink);
-                URL.revokeObjectURL(archiveUrl);
-                
-                // Give user time to see the download, then confirm
-                await new Promise(resolve => setTimeout(resolve, 500));
-                if (!confirm(`Archive "${archiveFilename}" should be downloading.\\n\\nClick OK to continue with summary generation, or Cancel to stop.`)) {
-                    return;
-                }
-            }
-            
-            setStatus('Archive saved, generating summary...', '');
-            closeSessions();
-            
-            // Smart trim: find natural scene break near 10 messages from end
-            const targetKeep = 10;
-            const trimIndex = findNaturalTrimPoint(targetKeep);
-            const messagesToTrim = messages.slice(0, trimIndex);
-            const messagesToKeep = messages.slice(trimIndex);
-            
-            // Build reference doc context
-            let refDocContext = '';
-            if (referenceDocuments.length > 0) {
-                refDocContext = '\\nREFERENCE DOCUMENTS IN USE:\\n';
-                referenceDocuments.forEach(doc => {
-                    refDocContext += `- ${doc.name} (${doc.content.length} chars)\\n`;
-                });
-            }
-            
-            // 2. Generate ROLLING continuity summary using AI
-            try {
-                let summaryPrompt = `You are the Continuity Director for a high-fidelity roleplay campaign.
-Your goal is to freeze-frame the story so the next writer can pick up the EXACT facts and the EXACT feeling.
-
-CRITICAL FAILURE POINTS TO AVOID:
-1. Do not lose "Hard Data" (Classes, Session Numbers, Dates, Skill Values, Character Tier). These must be precise.
-2. Do not lose "Soft Data" (Micro-expressions, tension, smells, thematic threads).
-3. Do not summarize into generic RPG prose. Use the novelist's voice established in the text.
-4. If existing data conflicts with session content, UPDATE to reflect the current state. Do not preserve outdated information.
-
-YOUR TASK: Generate a SINGLE CONSOLIDATED character sheet that MERGES the existing data with the new session content.
-Do NOT simply append — integrate, update, and resolve conflicts. The result should be ONE coherent document, not a stack of session updates.
-
-EXISTING CHARACTER SHEET:
-${characterSheet || 'No existing data — this is the first archive.'}
-${refDocContext}
-
-SESSION CONTENT TO INTEGRATE:
-${messagesToTrim.map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\\n\\n')}
-
----
-
-GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
-
-# CHARACTER SHEET — [Character Name] | Updated ${new Date().toLocaleDateString()}
-
-## 1. THE NARRATIVE LENS (The "Vibe")
-* **Narrative Voice:** [E.g. "Introspective, sensory-heavy. Sentences are architectural."]
-* **Current Atmospheric Tension:** [E.g. "Safe but fragile. The quiet intimacy of a Saturday morning."]
-* **Pacing:** [E.g. "Glacial, savory, focused on micro-moments."]
-* **Active Thematic Threads:** [Themes that have emerged organically — e.g. "Freedom vs. Belonging", "Cost of Power"]
-* **Active Dramatic Questions:** [E.g. "Can the PC escape the Undercity without becoming what they hate?"]
-
-## 2. TECHNICAL CONTINUITY (Hard Facts)
-* **Current Date/Time in Story:** [e.g. Saturday, August 24th, 10:00 AM]
-* **Campaign Status:** [e.g. Session 8 completed. Session 9 upcoming. Origin Arc complete / in progress.]
-* **Character Tier:** [Tier 1-4, with current skill budget status]
-* **Active Character Specs:**
-    * **PC:** [Name, Class, Key Stats — ALL current skill values]
-    * **NPCs:** [Name, Class/Role (BE SPECIFIC - e.g. "Archfey Warlock", NOT just "caster")]
-* **Inventory/Resources:** [Key items held, money, spell slots status]
-
-## 3. THE SENSORY SNAPSHOT (The "Now")
-* **Location:** [Exact room, lighting, smells. E.g. "Kitchen, smell of chives and coffee."]
-* **Physical State:** [Clothing, posture. E.g. "She is wearing his Star Wars shirt and mismatched socks."]
-* **The Cut:** [Exactly where the scene ended. E.g. "She just walked out the door."]
-
-## 4. ACTIVE MICRO-DYNAMICS (The Subtext)
-*For each key NPC, describe the internal state, not just external actions.*
-* **[NPC Name]:** [Relationship Status]
-    * *Tension Axis:* [E.g. "Loyalty ↔ Self-Preservation, currently 70% Loyalty"]
-    * *Internal State:* [What are they feeling but not saying?]
-    * *Secret:* [What the PC doesn't know yet, if anything remains hidden]
-    * *Dialogue Fingerprint:* [Brief note on speech patterns]
-    * *Recent Anchor:* [A specific shared moment.]
-    * *Pending Tension:* [What is unresolved?]
-
-## 5. GOLDEN MOMENTS (Style Anchors)
-*2-4 direct quotes from the session that capture the prose voice and emotional tone.*
-* [Quote 1]
-* [Quote 2]
-
-## 6. CAUSAL CHAIN (How We Got Here)
-*The key decisions and consequences that shaped the current state.*
-* [Key event/choice] → led to → [consequence still active]
-* [PC decision at critical moment] → resulted in → [current situation]
-* [NPC action] → because → [motivation] → which means → [future implication]
-
-## 7. OPEN LOOPS
-* **Immediate:** [Next 10 minutes in story time]
-* **Short Term:** [Next session/arc]
-* **Long Game:** [Campaign-level goals and unresolved arcs]
-
-## 8. CAMPAIGN CHRONICLE (Append-only timeline)
-*Brief, factual timeline of major events across ALL sessions. One line per event. Never delete entries — only add new ones.*
-[Preserve ALL existing chronicle entries, then add new ones from this session]
-* [Date/Session]: [Event summary in one sentence]
-`;
-
-                let summary = '';
-                
-                if (provider === 'anthropic') {
-                    const response = await fetch('https://api.anthropic.com/v1/messages', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'x-api-key': apiKey,
-                            'anthropic-version': '2023-06-01',
-                            'anthropic-dangerous-direct-browser-access': 'true'
-                        },
-                        body: JSON.stringify({
-                            model: summaryModel,
-                            max_tokens: 4096,
-                            temperature: 0.3,
-                            messages: [{ role: 'user', content: summaryPrompt }]
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        const errorMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-                        throw new Error(`API Error: ${errorMsg}`);
-                    }
-                    const data = await response.json();
-                    summary = data.content[0].text;
-                } else {
-                    // Google AI
-                    const googleSummaryModel = useDeep ? 'gemini-2.5-flash' : 'gemini-2.0-flash';
-                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${googleSummaryModel}:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            contents: [{ parts: [{ text: summaryPrompt }] }],
-                            generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
-                        })
-                    });
-                    
-                    if (!response.ok) {
-                        const errorData = await response.json().catch(() => ({}));
-                        const errorMsg = errorData.error?.message || `HTTP ${response.status}: ${response.statusText}`;
-                        throw new Error(`API Error: ${errorMsg}`);
-                    }
-                    const data = await response.json();
-                    
-                    if (data.candidates?.[0]?.finishReason === 'SAFETY' || data.promptFeedback?.blockReason) {
-                        throw new Error('Content blocked by safety filters. Try with a different session.');
-                    }
-                    if (!data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                        throw new Error('No summary generated. API returned: ' + JSON.stringify(data).substring(0, 200));
-                    }
-                    
-                    summary = data.candidates[0].content.parts[0].text;
-                }
-                
-                // 3. ROLLING SUMMARY: Replace entire character sheet (not append)
-                characterSheet = summary;
-                
-                // 4. Smart trim
-                messages = messagesToKeep;
-                renderMessages();
-                
-                setStatus('Archive & Trim complete!', 'success');
-                alert(`Done!\\n\\n✓ Full archive saved to file\\n✓ Character sheet CONSOLIDATED (rolling summary)\\n✓ Chat smart-trimmed to ${messagesToKeep.length} messages\\n\\nRemember to Download your current session to save the updated character sheet.`);
-                
-            } catch (err) {
-                console.error(err);
-                setStatus('Summary generation failed', 'error');
-                alert('Archive saved but summary generation failed: ' + err.message + '\\n\\nChat was NOT trimmed.');
-            }
-        }
-        
-        function findNaturalTrimPoint(targetKeep) {
-            const total = messages.length;
-            const targetIndex = total - targetKeep;
-            const searchStart = Math.max(0, targetIndex - 3);
-            const searchEnd = Math.min(total, targetIndex + 3);
-            
-            const breakIndicators = [
-                'what do you do', 'what would you like to do', 'what calls to you',
-                'how do you respond', "what's your move", 'where do you go',
-                'since last time', 'time passes', 'the dust settles',
-                'your origin is written', 'the world opens',
-                'unresolved threads', 'what speaks to you',
-                'how much time passes', 'continue immediately'
-            ];
-            
-            let bestIndex = targetIndex;
-            
-            for (let i = searchStart; i < searchEnd; i++) {
-                if (i < total && messages[i].role === 'assistant') {
-                    const contentLower = messages[i].content.toLowerCase().slice(-200);
-                    for (const indicator of breakIndicators) {
-                        if (contentLower.includes(indicator)) {
-                            bestIndex = i + 1;
-                            break;
-                        }
-                    }
-                }
-            }
-            
-            return Math.max(2, Math.min(bestIndex, total - 2));
+            setStatus(`Downloaded: ${name}.json`, 'success');
         }
 
         function newSession() {
@@ -1291,15 +1370,6 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                 }
             }
             
-            // Ask if user wants to keep reference docs for the new session
-            if (referenceDocuments.length > 0) {
-                if (!confirm(`Keep ${referenceDocuments.length} reference document(s) for the new session?`)) {
-                    referenceDocuments = [];
-                }
-            }
-            
-            currentStoryName = '';  // Clear story name
-            localStorage.removeItem('nexus_story_name');
             renderMessages();
             setStatus('New session started');
         }
@@ -1420,15 +1490,6 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                     systemPrompt += '(Reference this for character details, relationships, and past events)\n';
                     systemPrompt += '='.repeat(60) + '\n\n';
                     systemPrompt += characterSheet;
-                }
-                if (referenceDocuments.length > 0) {
-                    systemPrompt += '\n\n' + '='.repeat(60) + '\n';
-                    systemPrompt += 'REFERENCE DOCUMENTS\n';
-                    systemPrompt += '(Player-provided materials for this campaign - rules, playbooks, maps, etc.)\n';
-                    systemPrompt += '='.repeat(60) + '\n\n';
-                    referenceDocuments.forEach(doc => {
-                        systemPrompt += `--- ${doc.name} ---\n\n${doc.content}\n\n`;
-                    });
                 }
                 
                 let fullContent = '';
@@ -1610,24 +1671,10 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
         });
 
         // ============================================================
-        // SCROLL HANDLER - Floating Header
-        // ============================================================
-        const header = document.getElementById('header');
-        const chatContainer = document.getElementById('chat-container');
-        
-        chatContainer.addEventListener('scroll', () => {
-            if (chatContainer.scrollTop > 50) {
-                header.classList.add('scrolled');
-            } else {
-                header.classList.remove('scrolled');
-            }
-        });
-
-        // ============================================================
         // INIT
         // ============================================================
         // Check for API key on load
-        if (!getApiKey() && !getGoogleApiKey()) {
+        if (!getApiKey()) {
             setTimeout(() => {
                 setStatus('Please set your API key in Settings', 'error');
             }, 500);

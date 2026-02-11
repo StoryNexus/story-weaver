@@ -641,7 +641,7 @@ Streamlined Edition, Retuned for Dynamic Side Arcs and Player-Led Storytelling
                 # Anthropic Claude API
                 with self.client.messages.stream(
                     model=self.model_var.get(),
-                    max_tokens=8192,
+                    max_tokens=12288,
                     temperature=self.temp_var.get(),
                     system=self._get_system_prompt(),
                     messages=self.messages
@@ -682,7 +682,7 @@ Streamlined Edition, Retuned for Dynamic Side Arcs and Player-Led Storytelling
                     last_msg,
                     generation_config=genai.types.GenerationConfig(
                         temperature=google_temp,
-                        max_output_tokens=8192
+                        max_output_tokens=12288
                     ),
                     stream=True
                 )
@@ -903,7 +903,7 @@ Streamlined Edition, Retuned for Dynamic Side Arcs and Player-Led Storytelling
         
         # Ask how many recent messages to keep
         dialog = ctk.CTkInputDialog(
-            text=f"You have {total_messages} messages.\n\nHow many recent messages to KEEP?\n(Older messages will be summarized & archived)",
+            text=f"You have {total_messages} messages.\n\nHow many recent messages to KEEP?\n(Older messages will be summarized & archived)\n\nTip: The system will find a natural scene break near your number.",
             title="Archive & Trim"
         )
         result = dialog.get_input()
@@ -922,16 +922,25 @@ Streamlined Edition, Retuned for Dynamic Side Arcs and Player-Led Storytelling
             messagebox.showerror("Error", "Please enter a number.")
             return
         
-        # Split messages
-        messages_to_trim = self.messages[:-keep_count]
-        messages_to_keep = self.messages[-keep_count:]
+        # Ask summary quality level
+        quality_dialog = ctk.CTkInputDialog(
+            text="Summary quality:\n\n1 = Quick (Haiku - fast, cheaper)\n2 = Deep (Sonnet - better continuity)\n\nEnter 1 or 2:",
+            title="Summary Quality"
+        )
+        quality_result = quality_dialog.get_input()
+        summary_model = "claude-sonnet-4-5-20250929"  # Default to deep
+        if quality_result and quality_result.strip() == "1":
+            summary_model = "claude-haiku-4-5-20251001"
+        
+        # Smart Trim: find natural break point near requested keep_count
+        trim_index = self._find_natural_trim_point(keep_count)
+        messages_to_trim = self.messages[:trim_index]
+        messages_to_keep = self.messages[trim_index:]
         
         # Save full archive first
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        # Use current story name or default
         if self.current_story_path:
             base_name = Path(self.current_story_path).stem
-            # Remove any existing timestamp from the name
             base_name = base_name.split('_')[0] if '_' in base_name else base_name
         else:
             base_name = "session"
@@ -946,46 +955,61 @@ Streamlined Edition, Retuned for Dynamic Side Arcs and Player-Led Storytelling
             "model": self.model_var.get(),
             "temperature": self.temp_var.get(),
             "messages": self.messages.copy(),
-            "character_sheet": self.character_sheet  # Include current sheet in archive
+            "character_sheet": self.character_sheet
         }
         
         with open(archive_path, "w", encoding="utf-8") as f:
             json.dump(archive_data, f, indent=2, ensure_ascii=False)
         
-        # Now generate summary of trimmed content
-        self._set_status("Generating summary...")
+        # Generate ROLLING summary (consolidates existing sheet + new content)
+        self._set_status(f"Generating summary ({summary_model.split('-')[1]})...")
         self.update()
+        
+        # Build reference doc context for summary
+        ref_doc_context = ""
+        if self.reference_documents:
+            ref_doc_context = "\nREFERENCE DOCUMENTS IN USE:\n"
+            for doc in self.reference_documents:
+                ref_doc_context += f"- {doc['name']} ({len(doc['content'])} chars)\n"
         
         summary_prompt = f"""You are the Continuity Director for a high-fidelity roleplay campaign.
 Your goal is to freeze-frame the story so the next writer can pick up the EXACT facts and the EXACT feeling.
 
 CRITICAL FAILURE POINTS TO AVOID:
-1. Do not lose "Hard Data" (Classes, Session Numbers, Dates). These must be precise.
-2. Do not lose "Soft Data" (Micro-expressions, tension, smells).
+1. Do not lose "Hard Data" (Classes, Session Numbers, Dates, Skill Values, Character Tier). These must be precise.
+2. Do not lose "Soft Data" (Micro-expressions, tension, smells, thematic threads).
 3. Do not summarize into generic RPG prose. Use the novelist's voice established in the text.
+4. If existing data conflicts with session content, UPDATE to reflect the current state. Do not preserve outdated information.
 
-EXISTING DATA:
-{self.character_sheet if self.character_sheet else 'No existing data'}
+YOUR TASK: Generate a SINGLE CONSOLIDATED character sheet that MERGES the existing data with the new session content.
+Do NOT simply append — integrate, update, and resolve conflicts. The result should be ONE coherent document, not a stack of session updates.
 
-SESSION CONTENT:
+EXISTING CHARACTER SHEET:
+{self.character_sheet if self.character_sheet else 'No existing data — this is the first archive.'}
+{ref_doc_context}
+
+SESSION CONTENT TO INTEGRATE:
 {chr(10).join([f"{m['role'].upper()}: {m['content']}" for m in messages_to_trim])}
 
 ---
 
-GENERATE A NEW CHARACTER SHEET USING THIS EXACT FORMAT:
+GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
 
-# === SESSION UPDATE: {datetime.now().strftime("%Y-%m-%d")} ===
+# CHARACTER SHEET — [Character Name] | Updated {datetime.now().strftime("%Y-%m-%d")}
 
 ## 1. THE NARRATIVE LENS (The "Vibe")
-* **Narrative Voice:** [E.g. "Introspective, sensory-heavy. Focuses on small details like the temperature of coffee. Sentences are architectural."]
+* **Narrative Voice:** [E.g. "Introspective, sensory-heavy. Sentences are architectural."]
 * **Current Atmospheric Tension:** [E.g. "Safe but fragile. The quiet intimacy of a Saturday morning."]
 * **Pacing:** [E.g. "Glacial, savory, focused on micro-moments."]
+* **Active Thematic Threads:** [Themes that have emerged organically — e.g. "Freedom vs. Belonging", "Cost of Power"]
+* **Active Dramatic Questions:** [E.g. "Can the PC escape the Undercity without becoming what they hate?"]
 
 ## 2. TECHNICAL CONTINUITY (Hard Facts)
 * **Current Date/Time in Story:** [e.g. Saturday, August 24th, 10:00 AM]
-* **Campaign Status:** [e.g. Session 8 completed. Session 9 upcoming.]
+* **Campaign Status:** [e.g. Session 8 completed. Session 9 upcoming. Origin Arc complete / in progress.]
+* **Character Tier:** [Tier 1-4, with current skill budget status]
 * **Active Character Specs:**
-    * **PC:** [Name, Class, Key Stats]
+    * **PC:** [Name, Class, Key Stats — ALL current skill values]
     * **NPCs:** [Name, Class/Role (BE SPECIFIC - e.g. "Archfey Warlock", NOT just "caster")]
 * **Inventory/Resources:** [Key items held, money, spell slots status]
 
@@ -997,40 +1021,70 @@ GENERATE A NEW CHARACTER SHEET USING THIS EXACT FORMAT:
 ## 4. ACTIVE MICRO-DYNAMICS (The Subtext)
 *For each key NPC, describe the internal state, not just external actions.*
 * **[NPC Name]:** [Relationship Status]
+    * *Tension Axis:* [E.g. "Loyalty ↔ Self-Preservation, currently 70% Loyalty"]
     * *Internal State:* [What are they feeling but not saying?]
-    * *Recent Anchor:* [A specific shared moment. E.g. "The moment she confessed she is a size 7."]
+    * *Secret:* [What the PC doesn't know yet, if anything remains hidden]
+    * *Dialogue Fingerprint:* [Brief note on speech patterns]
+    * *Recent Anchor:* [A specific shared moment.]
     * *Pending Tension:* [What is unresolved?]
 
 ## 5. GOLDEN MOMENTS (Style Anchors)
+*2-4 direct quotes from the session that capture the prose voice and emotional tone. These serve as calibration references for future responses.*
 * [Quote 1]
 * [Quote 2]
 
-## 6. OPEN LOOPS
-* **Immediate:** [Next 10 minutes]
-* **Short Term:** [Next session/date]
-* **Long Game:** [Arc goals]
+## 6. CAUSAL CHAIN (How We Got Here)
+*The key decisions and consequences that shaped the current state. This is the story's spine.*
+* [Key event/choice] → led to → [consequence still active]
+* [PC decision at critical moment] → resulted in → [current situation]
+* [NPC action] → because → [motivation] → which means → [future implication]
+
+## 7. OPEN LOOPS
+* **Immediate:** [Next 10 minutes in story time]
+* **Short Term:** [Next session/arc]
+* **Long Game:** [Campaign-level goals and unresolved arcs]
+
+## 8. CAMPAIGN CHRONICLE (Append-only timeline)
+*Brief, factual timeline of major events across ALL sessions. One line per event. Never delete entries — only add new ones.*
+[Preserve ALL existing chronicle entries from the existing sheet, then add new ones from this session]
+* [Date/Session]: [Event summary in one sentence]
 """
 
         try:
             response = self.client.messages.create(
-                model="claude-haiku-4-5-20251001",  # Use Haiku for speed/cost
-                max_tokens=2000,
-                temperature=0.3,  # Low temp for factual summary
+                model=summary_model,
+                max_tokens=4096,
+                temperature=0.3,
                 messages=[{"role": "user", "content": summary_prompt}]
             )
             
             summary = response.content[0].text
             
-            # Append to character sheet
+            # ROLLING SUMMARY: Replace entire character sheet (not append)
             char_sheet_path = APP_DIR / "character_sheet.txt"
-            
-            with open(char_sheet_path, "a", encoding="utf-8") as f:
-                f.write(f"\n\n{summary}\n")
+            char_sheet_path.write_text(summary, encoding="utf-8")
             
             # Reload character sheet into memory
-            self.character_sheet = self._load_character_sheet()
+            self.character_sheet = summary
             
-            # Update messages
+            # Generate bridge message for context
+            bridge_prompt = f"""Based on this character sheet, write a 2-3 sentence "Previously..." bridge that connects the archived content to the remaining conversation. Write it in the narrative voice established in the sheet. Start with "Previously..." and be specific about where the story left off.
+
+Character Sheet:
+{summary}
+
+The remaining conversation starts with:
+{messages_to_keep[0]['role'].upper()}: {messages_to_keep[0]['content'][:500]}"""
+
+            bridge_response = self.client.messages.create(
+                model="claude-haiku-4-5-20251001",
+                max_tokens=200,
+                temperature=0.5,
+                messages=[{"role": "user", "content": bridge_prompt}]
+            )
+            bridge_text = bridge_response.content[0].text
+            
+            # Update messages with bridge
             self.messages = messages_to_keep
             
             # Rebuild display
@@ -1038,7 +1092,8 @@ GENERATE A NEW CHARACTER SHEET USING THIS EXACT FORMAT:
             
             self.chat_log.configure(state="normal")
             self.chat_log.insert("end", f"\n[{len(messages_to_trim)} messages archived & summarized]\n", "divider")
-            self.chat_log.insert("end", f"[Character sheet updated]\n\n", "divider")
+            self.chat_log.insert("end", f"[Character sheet consolidated (rolling summary)]\n", "divider")
+            self.chat_log.insert("end", f"\n{bridge_text}\n\n", "nexus_text")
             self.chat_log.configure(state="disabled")
             
             for msg in self.messages:
@@ -1047,14 +1102,49 @@ GENERATE A NEW CHARACTER SHEET USING THIS EXACT FORMAT:
             self._set_status("Archive complete", COLORS["success"])
             messagebox.showinfo("Archive & Trim", 
                 f"✓ Full conversation archived to:\n{archive_name}\n\n"
-                f"✓ Summary added to character_sheet.txt\n\n"
-                f"✓ Kept {keep_count} recent messages\n\n"
+                f"✓ Character sheet CONSOLIDATED (not appended)\n\n"
+                f"✓ Kept {len(messages_to_keep)} messages (smart trim)\n\n"
+                f"✓ Bridge context generated\n\n"
                 f"Character continuity preserved!")
             
         except Exception as e:
             messagebox.showerror("Error", f"Failed to generate summary: {e}\n\nMessages were archived but not summarized.")
             self.messages = messages_to_keep
             self._set_status("Archive complete (no summary)", COLORS["error"])
+    
+    def _find_natural_trim_point(self, target_keep_count):
+        """Find a natural scene break near the target keep count."""
+        total = len(self.messages)
+        target_index = total - target_keep_count
+        
+        # Search window: 3 messages before and after the target
+        search_start = max(0, target_index - 3)
+        search_end = min(total, target_index + 3)
+        
+        # Scene break indicators (check assistant messages for these)
+        break_indicators = [
+            "what do you do", "what would you like to do", "what calls to you",
+            "how do you respond", "what's your move", "where do you go",
+            "since last time", "time passes", "the dust settles",
+            "your origin is written", "the world opens",
+            "unresolved threads", "what speaks to you",
+            "how much time passes", "continue immediately",
+        ]
+        
+        best_index = target_index
+        
+        for i in range(search_start, search_end):
+            if i < total and self.messages[i]["role"] == "assistant":
+                content_lower = self.messages[i]["content"].lower()[-200:]  # Check end of message
+                for indicator in break_indicators:
+                    if indicator in content_lower:
+                        # Found a natural break — trim AFTER this message
+                        best_index = i + 1
+                        break
+        
+        # Ensure we keep at least 2 and don't keep everything
+        best_index = max(2, min(best_index, total - 2))
+        return best_index
     
     def _get_local_ip(self):
         """Get local IP address."""
