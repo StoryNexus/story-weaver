@@ -46,7 +46,7 @@
 - **Prose Calibration Engine**: Fine-tune writing style with author references and density controls
 - **Character Sheet Continuity**: Persistent tracking with rolling summary consolidation
 - **Save/Load Sessions**: Pick up any campaign where you left off
-- **Model Selection**: Claude Opus 4.6, Opus 4.5, Sonnet 4.5, Haiku 4.5
+- **Model Selection**: Claude Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Haiku 4.5
 - **Multi-Provider Support**: Anthropic Claude and Google Gemini
 - **Temperature Control**: Dial creativity up for wild sessions, down for consistency
 - **Mobile Server**: Play on your phone while running locally on desktop
@@ -159,7 +159,8 @@ The consolidated sheet includes:
 |-------|----------|------|
 | **Opus 4.6** | Most advanced, complex narratives, nuanced NPCs | ~$0.075/exchange |
 | **Opus 4.5** | High quality, complex reasoning | ~$0.075/exchange |
-| **Sonnet 4.5** | Daily play, excellent balance of quality and cost | ~$0.015/exchange |
+| **Sonnet 4.6** | **Recommended default.** Near-Opus quality at Sonnet pricing | ~$0.015/exchange |
+| **Sonnet 4.5** | Still solid, slightly cheaper on cached prompts | ~$0.015/exchange |
 | **Haiku 4.5** | Quick sessions, testing, budget-conscious | ~$0.002/exchange |
 
 *Approximate costs based on typical exchange length (~500 tokens in, 800 tokens out)
@@ -205,6 +206,7 @@ nexus/
 ## Version History
 
 **v3.0** (Current) — Origin Arc Edition
+- Added Claude Sonnet 4.6 support (new default model)
 - Character Tier system (Origin, Journeyman, Veteran, Legend)
 - Origin Arc guided prologue
 - Narrative Architecture Engine (story spine, dramatic questions, thematic threads)
