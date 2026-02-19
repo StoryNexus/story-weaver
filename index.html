@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>The Nexus</title>
+    <title>THE NEXUS // v3.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script>
@@ -12,429 +14,610 @@
     </script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap');
 
-        :root {
-            --bg-dark: #0d0d12;
-            --bg-mid: #151520;
-            --bg-light: #1e1e2e;
-            --accent: #b4a0d4;
-            --accent-hover: #c9b8e6;
-            --text: #e4e0ed;
-            --text-dim: #9690a8;
-            --text-muted: #5c5872;
-            --border: #3d3658;
-            --success: #8bc4a8;
-            --error: #d4a0a0;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            font-family: Georgia, 'Times New Roman', serif;
-            background: linear-gradient(135deg, var(--bg-dark) 0%, var(--bg-mid) 100%);
-            color: var(--text);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+:root {
+    --bg-dark: #050508;
+    --bg-mid: #0a0a10;
+    --bg-light: #0f0f1a;
+    --bg-panel: #0c0c14;
+    --accent: #00ffe7;
+    --accent-hover: #66fff3;
+    --accent-dim: #00ffe722;
+    --magenta: #ff2d78;
+    --magenta-dim: #ff2d7822;
+    --text: #d0f0e8;
+    --text-dim: #7ab8a8;
+    --text-muted: #2a4a42;
+    --border: #00ffe730;
+    --border-hot: #00ffe780;
+    --success: #00ff88;
+    --error: #ff2d78;
+    --scanline: rgba(0,255,231,0.025);
+}
 
-        /* Header - Floating Menu Bar */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: var(--bg-mid);
-            padding: 8px 16px;
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-        }
+body {
+    font-family: 'Rajdhani', 'Share Tech Mono', monospace;
+    background: var(--bg-dark);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow-x: hidden;
+}
 
-        .header.scrolled {
-            padding: 6px 12px;
-            background: rgba(21, 21, 32, 0.95);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.4);
-        }
+/* Scanline overlay */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        var(--scanline) 2px,
+        var(--scanline) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+}
 
-        .header.scrolled h1 {
-            font-size: 1em;
-        }
+/* Grid noise bg */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-image:
+        linear-gradient(var(--accent-dim) 1px, transparent 1px),
+        linear-gradient(90deg, var(--accent-dim) 1px, transparent 1px);
+    background-size: 60px 60px;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+}
 
-        .header.scrolled .header-btn {
-            padding: 4px 10px;
-            font-size: 0.8em;
-        }
+/* Header */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--bg-mid);
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--border-hot);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 20px rgba(0,255,231,0.08), inset 0 -1px 0 var(--border-hot);
+}
 
-        .header h1 {
-            color: var(--accent);
-            font-size: 1.2em;
-            font-weight: normal;
-            transition: font-size 0.3s ease;
-            white-space: nowrap;
-        }
+.header.scrolled {
+    padding: 6px 12px;
+    background: rgba(10,10,16,0.97);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 0 30px rgba(0,255,231,0.12);
+}
 
-        .header-buttons {
-            display: flex;
-            gap: 6px;
-        }
+.header.scrolled h1 {
+    font-size: 0.95em;
+}
 
-        .header-btn {
-            background: var(--bg-light);
-            color: var(--text-dim);
-            border: 1px solid var(--border);
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 0.85em;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+.header.scrolled .header-btn {
+    padding: 4px 10px;
+    font-size: 0.78em;
+}
 
-        .header-btn:hover {
-            background: var(--border);
-            color: var(--text);
-        }
+.header h1 {
+    color: var(--accent);
+    font-size: 1.15em;
+    font-weight: 700;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-shadow: 0 0 12px var(--accent), 0 0 24px rgba(0,255,231,0.4);
+    transition: font-size 0.3s ease;
+    white-space: nowrap;
+}
 
-        /* Spacer to prevent content from hiding under fixed header */
-        .header-spacer {
-            height: 52px;
-            flex-shrink: 0;
-        }
+.header-buttons {
+    display: flex;
+    gap: 6px;
+}
 
-        /* Chat Area */
-        .chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
+.header-btn {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--border);
+    padding: 5px 12px;
+    border-radius: 0;
+    font-size: 0.82em;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    transition: all 0.2s;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+}
 
-        .message {
-            max-width: 85%;
-            padding: 12px 16px;
-            border-radius: 12px;
-            line-height: 1.6;
-            font-size: 1em;
-            white-space: pre-wrap;
-            word-wrap: break-word;
-        }
+.header-btn:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 10px rgba(0,255,231,0.3), inset 0 0 6px rgba(0,255,231,0.1);
+}
 
-        .message.user {
-            background: var(--bg-light);
-            align-self: flex-end;
-            border: 1px solid var(--border);
-        }
+/* Spacer */
+.header-spacer {
+    height: 52px;
+    flex-shrink: 0;
+}
 
-        .message.assistant {
-            background: var(--bg-mid);
-            align-self: flex-start;
-            border: 1px solid var(--border);
-        }
+/* Chat Area */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    z-index: 1;
+}
 
-        .message-role {
-            font-size: 0.75em;
-            font-weight: bold;
-            margin-bottom: 6px;
-            font-family: system-ui, sans-serif;
-        }
+.chat-container::-webkit-scrollbar {
+    width: 4px;
+}
+.chat-container::-webkit-scrollbar-track {
+    background: var(--bg-dark);
+}
+.chat-container::-webkit-scrollbar-thumb {
+    background: var(--border-hot);
+    border-radius: 0;
+}
 
-        .message.user .message-role {
-            color: var(--text-dim);
-        }
+.message {
+    max-width: 85%;
+    padding: 12px 16px;
+    border-radius: 0;
+    line-height: 1.65;
+    font-size: 0.97em;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    position: relative;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+}
 
-        .message.assistant .message-role {
-            color: var(--accent);
-        }
+.message.user {
+    background: var(--magenta-dim);
+    align-self: flex-end;
+    border: 1px solid var(--magenta);
+    border-right: 3px solid var(--magenta);
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 0 100%);
+    box-shadow: 0 0 12px rgba(255,45,120,0.15), inset 0 0 8px rgba(255,45,120,0.05);
+}
 
-        .message-content {
-            color: var(--text);
-        }
+.message.assistant {
+    background: var(--bg-panel);
+    align-self: flex-start;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+    box-shadow: 0 0 12px rgba(0,255,231,0.08), inset 0 0 8px rgba(0,255,231,0.03);
+}
 
-        /* Welcome */
-        .welcome {
-            text-align: center;
-            padding: 60px 20px;
-            color: var(--text-dim);
-        }
+.message-role {
+    font-size: 0.72em;
+    font-weight: 700;
+    margin-bottom: 5px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
 
-        .welcome h2 {
-            color: var(--accent);
-            font-size: 1.8em;
-            margin-bottom: 16px;
-            font-weight: normal;
-        }
+.message.user .message-role {
+    color: var(--magenta);
+    text-shadow: 0 0 8px rgba(255,45,120,0.5);
+}
 
-        /* Input Area */
-        .input-area {
-            background: var(--bg-mid);
-            padding: 16px 20px;
-            border-top: 1px solid var(--border);
-            flex-shrink: 0;
-        }
+.message.assistant .message-role {
+    color: var(--accent);
+    text-shadow: 0 0 8px rgba(0,255,231,0.5);
+}
 
-        .input-container {
-            display: flex;
-            gap: 10px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
+.message-content {
+    color: var(--text);
+}
 
-        .input-wrapper {
-            flex: 1;
-            position: relative;
-        }
+/* Welcome */
+.welcome {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-dim);
+    position: relative;
+    z-index: 1;
+}
 
-        #message-input {
-            width: 100%;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-family: Georgia, serif;
-            font-size: 1em;
-            resize: none;
-            min-height: 48px;
-            max-height: 150px;
-            line-height: 1.5;
-        }
+.welcome h2 {
+    color: var(--accent);
+    font-size: 2em;
+    margin-bottom: 16px;
+    font-weight: 700;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-shadow: 0 0 20px var(--accent), 0 0 40px rgba(0,255,231,0.3);
+    animation: flicker 6s infinite;
+}
 
-        #message-input:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+.welcome p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9em;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+}
 
-        #message-input::placeholder {
-            color: var(--text-muted);
-        }
+@keyframes flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.85; }
+    97% { opacity: 1; }
+    98% { opacity: 0.7; }
+    99% { opacity: 1; }
+}
 
-        #send-btn {
-            background: var(--accent);
-            color: var(--bg-dark);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 12px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 1em;
-            transition: background 0.2s;
-            align-self: flex-end;
-        }
+/* Input Area */
+.input-area {
+    background: var(--bg-mid);
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-hot);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 -4px 30px rgba(0,255,231,0.06);
+}
 
-        #send-btn:hover {
-            background: var(--accent-hover);
-        }
+.input-container {
+    display: flex;
+    gap: 10px;
+    max-width: 900px;
+    margin: 0 auto;
+}
 
-        #send-btn:disabled {
-            background: var(--text-muted);
-            cursor: not-allowed;
-        }
+.input-wrapper {
+    flex: 1;
+    position: relative;
+}
 
-        /* Status */
-        .status {
-            text-align: center;
-            font-size: 0.8em;
-            color: var(--text-muted);
-            margin-top: 8px;
-            font-family: system-ui, sans-serif;
-        }
+#message-input {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-bottom: 2px solid var(--accent);
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: 0;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.92em;
+    resize: none;
+    min-height: 48px;
+    max-height: 150px;
+    line-height: 1.5;
+    letter-spacing: 0.05em;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
 
-        .status.error {
-            color: var(--error);
-        }
+#message-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    border-bottom-color: var(--accent);
+    box-shadow: 0 0 16px rgba(0,255,231,0.15), inset 0 0 8px rgba(0,255,231,0.04);
+}
 
-        .status.success {
-            color: var(--success);
-        }
+#message-input::placeholder {
+    color: var(--text-muted);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.08em;
+}
 
-        /* Modal */
-        .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.8);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-        }
+#send-btn {
+    background: var(--accent);
+    color: var(--bg-dark);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 0;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.88em;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: all 0.2s;
+    align-self: flex-end;
+    clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 0 100%);
+    box-shadow: 0 0 16px rgba(0,255,231,0.3);
+}
 
-        .modal-overlay.active {
-            display: flex;
-        }
+#send-btn:hover {
+    background: #fff;
+    box-shadow: 0 0 24px rgba(0,255,231,0.6);
+}
 
-        .modal {
-            background: var(--bg-mid);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 24px;
-            max-width: 500px;
-            width: 100%;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
+#send-btn:disabled {
+    background: var(--text-muted);
+    cursor: not-allowed;
+    box-shadow: none;
+}
 
-        .modal h3 {
-            color: var(--accent);
-            margin-bottom: 16px;
-            font-weight: normal;
-        }
+/* Status */
+.status {
+    text-align: center;
+    font-size: 0.75em;
+    color: var(--text-muted);
+    margin-top: 7px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+}
 
-        .modal label {
-            display: block;
-            color: var(--text-dim);
-            margin-bottom: 6px;
-            font-size: 0.9em;
-        }
+.status.error {
+    color: var(--error);
+    text-shadow: 0 0 8px rgba(255,45,120,0.5);
+}
 
-        .modal input, .modal select {
-            width: 100%;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px 12px;
-            border-radius: 8px;
-            font-size: 1em;
-            margin-bottom: 16px;
-        }
+.status.success {
+    color: var(--success);
+    text-shadow: 0 0 8px rgba(0,255,136,0.5);
+}
 
-        .modal input:focus, .modal select:focus {
-            outline: none;
-            border-color: var(--accent);
-        }
+/* Modal */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.88);
+    z-index: 200;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    backdrop-filter: blur(4px);
+}
 
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-            margin-top: 20px;
-        }
+.modal-overlay.active {
+    display: flex;
+}
 
-        .modal-btn {
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.95em;
-            border: none;
-        }
+.modal {
+    background: var(--bg-mid);
+    border: 1px solid var(--border-hot);
+    border-top: 2px solid var(--accent);
+    border-radius: 0;
+    padding: 24px;
+    max-width: 500px;
+    width: 100%;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 0 40px rgba(0,255,231,0.15), inset 0 0 30px rgba(0,255,231,0.02);
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}
 
-        .modal-btn.primary {
-            background: var(--accent);
-            color: var(--bg-dark);
-        }
+.modal h3 {
+    color: var(--accent);
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-size: 1em;
+    text-shadow: 0 0 10px rgba(0,255,231,0.5);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+}
 
-        .modal-btn.secondary {
-            background: var(--bg-light);
-            color: var(--text);
-            border: 1px solid var(--border);
-        }
+.modal label {
+    display: block;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+    font-size: 0.78em;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
 
-        /* Sessions list */
-        .sessions-list {
-            max-height: 200px;
-            overflow-y: auto;
-            margin-bottom: 16px;
-        }
+.modal input, .modal select {
+    width: 100%;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-bottom: 1px solid var(--accent);
+    color: var(--text);
+    padding: 10px 12px;
+    border-radius: 0;
+    font-size: 0.9em;
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 16px;
+    letter-spacing: 0.04em;
+}
 
-        .session-item {
-            padding: 10px 12px;
-            background: var(--bg-light);
-            border: 1px solid var(--border);
-            border-radius: 6px;
-            margin-bottom: 8px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+.modal input:focus, .modal select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 10px rgba(0,255,231,0.15);
+}
 
-        .session-item:hover {
-            border-color: var(--accent);
-        }
+.modal select option {
+    background: var(--bg-dark);
+}
 
-        .session-item .name {
-            color: var(--text);
-        }
+.modal-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
 
-        .session-item .date {
-            color: var(--text-muted);
-            font-size: 0.8em;
-        }
+.modal-btn {
+    padding: 10px 20px;
+    border-radius: 0;
+    cursor: pointer;
+    font-size: 0.82em;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border: none;
+    transition: all 0.2s;
+}
 
-        .session-item .delete-btn {
-            color: var(--error);
-            background: none;
-            border: none;
-            cursor: pointer;
-            padding: 4px 8px;
-            font-size: 1.1em;
-        }
+.modal-btn.primary {
+    background: var(--accent);
+    color: var(--bg-dark);
+    font-weight: 700;
+    clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 0 100%);
+    box-shadow: 0 0 12px rgba(0,255,231,0.3);
+}
 
-        /* Loading animation */
-        .typing-indicator {
-            display: inline-block;
-        }
+.modal-btn.primary:hover {
+    background: #fff;
+    box-shadow: 0 0 20px rgba(0,255,231,0.5);
+}
 
-        .typing-indicator span {
-            animation: blink 1s infinite;
-        }
+.modal-btn.secondary {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+}
 
-        @keyframes blink {
-            0%, 50% { opacity: 1; }
-            51%, 100% { opacity: 0; }
-        }
+.modal-btn.secondary:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+}
 
-        /* Mobile adjustments */
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 1.1em;
-            }
+/* Sessions list */
+.sessions-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+}
 
-            .header-btn {
-                padding: 6px 10px;
-                font-size: 0.8em;
-            }
+.session-item {
+    padding: 10px 12px;
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-left: 2px solid var(--accent);
+    border-radius: 0;
+    margin-bottom: 6px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s;
+}
 
-            .message {
-                max-width: 95%;
-                font-size: 0.95em;
-            }
+.session-item:hover {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    box-shadow: 0 0 8px rgba(0,255,231,0.1);
+}
 
-            .chat-container {
-                padding: 12px;
-            }
+.session-item .name {
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+}
 
-            .input-area {
-                padding: 12px;
-            }
+.session-item .date {
+    color: var(--text-muted);
+    font-size: 0.75em;
+    font-family: 'Share Tech Mono', monospace;
+}
 
-            #send-btn {
-                padding: 12px 16px;
-            }
-        }
+.session-item .delete-btn {
+    color: var(--error);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 8px;
+    font-size: 1.1em;
+    transition: text-shadow 0.2s;
+}
+
+.session-item .delete-btn:hover {
+    text-shadow: 0 0 8px rgba(255,45,120,0.8);
+}
+
+/* Loading animation */
+.typing-indicator {
+    display: inline-block;
+}
+
+.typing-indicator span {
+    animation: blink 0.8s infinite;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--accent);
+    text-shadow: 0 0 6px var(--accent);
+}
+
+@keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
+}
+
+/* Reference docs */
+.reference-docs-list {
+    max-height: 160px;
+    overflow-y: auto;
+    margin-bottom: 12px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 600px) {
+    .header h1 {
+        font-size: 0.95em;
+    }
+
+    .header-btn {
+        padding: 5px 8px;
+        font-size: 0.75em;
+    }
+
+    .message {
+        max-width: 95%;
+        font-size: 0.9em;
+    }
+
+    .chat-container {
+        padding: 12px;
+    }
+
+    .input-area {
+        padding: 12px;
+    }
+
+    #send-btn {
+        padding: 12px 14px;
+    }
+}
+
     </style>
 </head>
 <body>
     <div class="header" id="header">
-        <h1>✦ The Nexus</h1>
+        <h1>// NEXUS</h1>
         <div class="header-buttons">
-            <button class="header-btn" onclick="showSettings()">⚙️</button>
-            <button class="header-btn" onclick="showSessions()">💾</button>
-            <button class="header-btn" onclick="showReferenceDocs()">📚</button>
-            <button class="header-btn" onclick="newSession()">✦</button>
+            <button class="header-btn" onclick="showSettings()">⚙</button>
+            <button class="header-btn" onclick="showSessions()">◈</button>
+            <button class="header-btn" onclick="showReferenceDocs()">◻</button>
+            <button class="header-btn" onclick="newSession()">⊕</button>
         </div>
     </div>
     
@@ -442,17 +625,17 @@
 
     <div class="chat-container" id="chat-container">
         <div class="welcome">
-            <h2>The Nexus Awaits</h2>
-            <p>Your framework is loaded and ready.<br>Type "Begin" to start a new session.</p>
+            <h2>// THE NEXUS ONLINE //</h2>
+            <p>FRAMEWORK v3.0 LOADED &amp; READY<br>TYPE "BEGIN" TO INITIALIZE SESSION</p>
         </div>
     </div>
 
     <div class="input-area">
         <div class="input-container">
             <div class="input-wrapper">
-                <textarea id="message-input" placeholder="Enter your action..." rows="1"></textarea>
+                <textarea id="message-input" placeholder=">> ENTER COMMAND..." rows="1"></textarea>
             </div>
-            <button id="send-btn" onclick="sendMessage()">Send</button>
+            <button id="send-btn" onclick="sendMessage()">EXEC</button>
         </div>
         <div class="status" id="status">Ready</div>
     </div>
