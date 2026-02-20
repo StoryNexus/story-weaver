@@ -47,7 +47,7 @@
 - **Character Sheet Continuity**: Persistent tracking with rolling summary consolidation
 - **Save/Load Sessions**: Pick up any campaign where you left off
 - **Model Selection**: Claude Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Haiku 4.5
-- **Multi-Provider Support**: Anthropic Claude and Google Gemini
+- **Multi-Provider Support**: Anthropic Claude and Google Gemini (up to Gemini 3.1 Pro)
 - **Temperature Control**: Dial creativity up for wild sessions, down for consistency
 - **Mobile Server**: Play on your phone while running locally on desktop
 - **Dark UI**: Easy on the eyes for marathon sessions
@@ -167,10 +167,10 @@ The consolidated sheet includes:
 
 ## Temperature Guide
 
-- **0.7-0.8**: More predictable, consistent characterization
-- **1.0** (default): Balanced creativity
-- **1.1-1.3**: Wilder, more surprising narrative choices
-- **1.4-1.5**: Maximum chaos (use sparingly)
+- **0.3-0.5**: Tight, consistent, predictable — good for mechanical/rules-heavy sessions
+- **0.7-0.8**: Reliable characterization with room to breathe
+- **0.9** : Slightly more creative, occasional surprises
+- **1.0** (default, max): Full creative range — best for narrative-heavy play
 
 ## Anti-Railroading Safeguards
 
