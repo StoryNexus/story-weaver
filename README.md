@@ -47,7 +47,7 @@
 - **Character Sheet Continuity**: Persistent tracking with rolling summary consolidation
 - **Save/Load Sessions**: Pick up any campaign where you left off
 - **Model Selection**: Claude Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Haiku 4.5
-- **Multi-Provider Support**: Anthropic Claude and Google Gemini (up to Gemini 3.1 Pro)
+- **Multi-Provider Support**: Anthropic Claude, Google Gemini (up to 3.1 Pro), and OpenAI (GPT-5.2, GPT-5 Mini, GPT-4o)
 - **Temperature Control**: Dial creativity up for wild sessions, down for consistency
 - **Mobile Server**: Play on your phone while running locally on desktop
 - **Dark UI**: Easy on the eyes for marathon sessions
@@ -61,6 +61,9 @@ pip install customtkinter anthropic PyPDF2 --break-system-packages
 
 # Optional: for Google AI support
 pip install google-generativeai --break-system-packages
+
+# Optional: for OpenAI support
+pip install openai --break-system-packages
 ```
 
 ### 2. Set your API key
@@ -68,6 +71,12 @@ pip install google-generativeai --break-system-packages
 ```bash
 # Linux/Mac: add to ~/.bashrc or ~/.zshrc
 export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+
+# Optional: for Google AI
+export GOOGLE_API_KEY="your-google-key-here"
+
+# Optional: for OpenAI
+export OPENAI_API_KEY="sk-your-key-here"
 
 # Windows PowerShell
 $env:ANTHROPIC_API_KEY="sk-ant-your-key-here"
@@ -155,6 +164,8 @@ The consolidated sheet includes:
 
 ## Model Recommendations
 
+### Anthropic (Claude)
+
 | Model | Best For | Cost* |
 |-------|----------|------|
 | **Opus 4.6** | Most advanced, complex narratives, nuanced NPCs | ~$0.075/exchange |
@@ -162,6 +173,24 @@ The consolidated sheet includes:
 | **Sonnet 4.6** | **Recommended default.** Near-Opus quality at Sonnet pricing | ~$0.015/exchange |
 | **Sonnet 4.5** | Still solid, slightly cheaper on cached prompts | ~$0.015/exchange |
 | **Haiku 4.5** | Quick sessions, testing, budget-conscious | ~$0.002/exchange |
+
+### OpenAI (ChatGPT)
+
+| Model | Best For | Cost* |
+|-------|----------|------|
+| **GPT-5.2** | Thinking/reasoning model, deep narrative, complex problem-solving | ~$0.013/exchange |
+| **GPT-5.2 Instant** | **Recommended default.** Fast, capable everyday model | ~$0.013/exchange |
+| **GPT-5 Mini** | Budget-friendly, quick sessions | ~$0.002/exchange |
+| **GPT-4o** | Legacy multimodal, still solid | ~$0.009/exchange |
+| **GPT-4o Mini** | Cheapest option for testing | ~$0.001/exchange |
+
+### Google AI (Gemini)
+
+| Model | Best For | Cost* |
+|-------|----------|------|
+| **Gemini 3.1 Pro** | Top-tier reasoning, long context | ~$0.010/exchange |
+| **Gemini 3 Pro** | Strong all-around performance | ~$0.010/exchange |
+| **Gemini 3 Flash** | Fast and cheap | ~$0.001/exchange |
 
 *Approximate costs based on typical exchange length (~500 tokens in, 800 tokens out)
 
@@ -241,4 +270,4 @@ MIT License — Use freely, modify as needed.
 
 ## Credits
 
-Built for immersive AI storytelling. Framework designed for use with Claude (Anthropic) and Gemini (Google) language models.
+Built for immersive AI storytelling. Framework designed for use with Claude (Anthropic), ChatGPT (OpenAI), and Gemini (Google) language models.
