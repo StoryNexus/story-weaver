@@ -1,8 +1,60 @@
 # The Nexus
 
-**Version 3.0** — Origin Arc Edition. An immersive RPG engine powered by Claude — your AI Game Master for genre-flexible, consequence-driven adventures.
+**Version 3.1** — Master Engine Edition. An immersive RPG engine powered by AI — your Game Master for genre-flexible, consequence-driven adventures across Claude, ChatGPT, and Gemini.
 
-## What's New in 3.0
+## What's New in 3.1
+
+### Dialogue Overhaul
+- **Advance the Ball Directive**: NPCs must escalate, pivot, concede, or misdirect — never re-litigate
+- **The Silent Turn**: NPCs with nothing new to add use physical beats instead of filler dialogue
+- **Scene Disruption Protocol**: Mundane intrusions break conversational loops organically
+
+### Combat & Action Rework
+- **Threat Vector Pause**: Incoming attacks described and STOPPED — player decides response
+- **Combat Environment Mandate**: 1-2 tactical environmental elements per fight, battlefield degrades with missed strikes
+- **Anatomical Consequence**: Injuries degrade specific capabilities (no abstract HP)
+- **Complication Engine**: Narrow success/failure margins always produce tactical trade-offs
+
+### NPC Autonomy Expansion
+- **Agenda Clocks**: Significant NPCs pursue tracked off-screen goals that advance during time skips
+- **Missed Connection**: PC encounters aftermath of NPC actions (resources already taken, safehouses already compromised)
+- **Unprompted Intercept**: NPCs interrupt when their clock completes or tension axis tips
+
+### Conditioned Response Upgrades
+- **Threshold Carryover**: Physical friction of previous scene persists into new environments
+- **Ghost Sensations**: 1-3 scene micro-flashbacks from mundane stimuli post-priming
+
+### Arc & Pacing Improvements
+- **The Season Premiere**: New arcs get hard cut cold opens, not smooth transitions
+- **Arc Escalation Directive**: Dramatic questions must shift axes between arcs (physical → social → moral)
+- **Resolution Rupture**: Arc endings set Pressure Gauge to Rupture/Collapsed — next arc begins in friction
+
+### Intimacy & Trauma Refinements
+- **The Invisible Ledger**: Bond/Trauma updates noted via system log, not immersion-breaking announcements
+- **Cool-Down Mandate**: 1-3 scene buffer after Tier 3/4 intimacy or trauma events
+- **Sensory Triggers (Scar Tissue)**: Registered sensory inputs per trauma, fed through Conditioned Response Engine
+- **Intimacy Bleed**: Bond history surfaces as subtext during conflict with bonded NPCs
+
+### Nomenclature Hardening
+- **"Cheap Alien" Prohibition**: No gratuitous apostrophes, edgy starting consonants, or double vowels
+- **Linguistic Blend Mandate**: Names blend two cultural anchors, not one
+- **Occupational Drift**: Name length/formality reflects world state (Frontier shortens, Gilded expands)
+
+### Prose Calibration Updates
+- **Stylistic Primer**: Internal alignment step before every response prevents style drift
+- **Lexical Bounty**: World State vocabulary profile actively incorporated (Anglo-Saxon for Dystopian, brand-adjacent for Gilded, etc.)
+
+### World State Engine Expansion
+- Every world state now defines **Information** (how truth works), **Currency** (what holds value), **Justice** (how disruption is punished), and **Mobility** (barriers to movement)
+
+### New Commands
+- **"Nexus, Export State"**: Outputs dense technical summary (PC, NPCs, world state, threads, cold open seed) for pasting into a fresh session
+
+### OpenAI Integration
+- Full ChatGPT API support across all three interfaces (desktop, web, mobile)
+- GPT-5.2, GPT-5.2 Instant, GPT-5 Mini, GPT-4o, GPT-4o Mini
+
+## What Was New in 3.0
 
 ### Origin Arc System
 - **4 Character Tiers**: Origin, Journeyman, Veteran, Legend — each with distinct skill budgets, entry styles, and gameplay feel
@@ -36,10 +88,11 @@
 ## Features
 
 ### Core System
-- **Nexus Framework v3.0**: Complete RPG system with tiered character creation, narrative architecture, and prose calibration
-- **13 World States**: Dystopian, Utopian, Frontier, Balanced, Chaos, Decadent, Occupied, Gilded, Liminal, Enclave, Noir, Dying, Mythic
+- **Nexus Framework v3.1**: Complete RPG system with tiered character creation, narrative architecture, combat anatomy, NPC agenda clocks, and prose calibration
+- **13 World States**: Dystopian, Utopian, Frontier, Balanced, Chaos, Decadent, Occupied, Gilded, Liminal, Enclave, Noir, Dying, Mythic — each with Information, Currency, Justice, and Mobility profiles
 - **Dynamic State Shifts**: World states blend, shift, and rupture based on your actions
 - **Player Agency Protection**: Multiple redundant safeguards prevent AI from narrating your character's actions
+- **Conditioned Response Engine**: NPCs react based on accumulated emotional/physical context, not just immediate stimulus
 
 ### Technical Features
 - **📚 Reference Documents**: Upload playbooks, rules, maps (supports .txt, .md, .pdf)
@@ -157,6 +210,7 @@ The consolidated sheet includes:
 - **"Veil this"** — Pull back from explicit content
 - **"Nexus, Pause"** — Halt the scene entirely
 - **"Rewind"** — Reset to before a failed choice
+- **"Nexus, Export State"** — Output dense technical summary for pasting into a new session
 - **"Nexus, show naming convention"** — See current cultural naming rules
 - **"Nexus, adjust prose: [style]"** — Change writing style mid-session
 - **"Read the room"** — Get current state analysis
@@ -224,7 +278,7 @@ If the AI ever railroads: **"Stop. You're narrating my character's actions. Let 
 ```
 nexus/
 ├── storyteller.py       # Desktop application
-├── framework.txt        # Nexus Framework v3.0
+├── framework.txt        # Nexus Framework v3.1
 ├── character_sheet.txt  # Persistent character data (rolling summary)
 ├── index.html           # Web version
 ├── nexus.html           # Mobile-optimized web version
@@ -234,7 +288,24 @@ nexus/
 
 ## Version History
 
-**v3.0** (Current) — Origin Arc Edition
+**v3.1** (Current) — Master Engine Edition
+- OpenAI ChatGPT API integration (GPT-5.2, GPT-5 Mini, GPT-4o across all interfaces)
+- Advance the Ball Directive + Silent Turn (dialogue anti-looping)
+- Scene Disruption Protocol (organic loop-breaking)
+- Threat Vector Pause (combat attacks require player response before resolution)
+- Combat Environment Mandate (tactical terrain + degrading battlefields)
+- Anatomical Consequence system (injuries degrade specific capabilities, no abstract HP)
+- Complication Engine (narrow margins produce tactical trade-offs)
+- NPC Agenda Clocks + Missed Connection + Unprompted Intercept
+- Conditioned Response upgrades: Threshold Carryover + Ghost Sensations
+- Season Premiere (hard cut arc transitions), Arc Escalation Directive, Resolution Rupture
+- Invisible Ledger, Cool-Down Mandate, Sensory Triggers, Intimacy Bleed
+- "Cheap Alien" Prohibition, Linguistic Blend Mandate, Occupational Drift
+- Stylistic Primer + Lexical Bounty (prose calibration hardening)
+- World State expansion: Information, Currency, Justice, Mobility profiles for all 13 states
+- "Nexus, Export State" command for session migration
+
+**v3.0** — Origin Arc Edition
 - Added Claude Sonnet 4.6 support (new default model)
 - Character Tier system (Origin, Journeyman, Veteran, Legend)
 - Origin Arc guided prologue
@@ -248,6 +319,11 @@ nexus/
 - Summary quality selection (Quick/Deep)
 - Increased max tokens (12288)
 - Character sheet preservation across new sessions
+- Character Integrity Directive (anti-redemption-railroading)
+- Dynamic Nomenclature with LLM ban lists
+- Echo Chamber of Awe prohibition
+- Conditioned Response Engine
+- UI redesign (Wope-inspired gradient aesthetic)
 
 **v2.1**
 - Reference Documents with PDF support
