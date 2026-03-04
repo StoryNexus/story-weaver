@@ -397,6 +397,7 @@
     <div class="header">
         <h1>✦ The Nexus</h1>
         <div class="header-buttons">
+            <button class="header-btn" onclick="showCharacterSheet()">📋 Sheet</button>
             <button class="header-btn" onclick="showSettings()">⚙ Settings</button>
             <button class="header-btn" onclick="showSessions()">📁 Sessions</button>
             <button class="header-btn" onclick="newSession()">✦ New</button>
@@ -484,6 +485,34 @@
             <div class="modal-buttons">
                 <button class="modal-btn secondary" onclick="closeSessions()">Close</button>
                 <button class="modal-btn primary" onclick="saveSession()">Save to Browser</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="character-sheet-modal">
+        <div class="modal" style="max-width: 700px;">
+            <h3>📋 Character Sheet</h3>
+            <p style="color: var(--text-dim); font-size: 0.9em; margin-bottom: 12px;">
+                View and edit your persistent character sheet.
+            </p>
+            <textarea id="character-sheet-editor" style="
+                width: 100%;
+                min-height: 350px;
+                max-height: 55vh;
+                background: var(--bg-light);
+                border: 1px solid var(--border);
+                color: var(--text);
+                padding: 12px;
+                border-radius: 8px;
+                font-size: 0.9em;
+                font-family: inherit;
+                line-height: 1.6;
+                resize: vertical;
+            " placeholder="No character sheet yet. Play a session and use Archive & Trim to generate one, or paste one here manually."></textarea>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="clearCharacterSheet()">Clear</button>
+                <button class="modal-btn secondary" onclick="closeCharacterSheet()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveCharacterSheet()">Save</button>
             </div>
         </div>
     </div>
@@ -2096,6 +2125,35 @@ The Nexus awaits.
         // ============================================================
         function getSessions() {
             return JSON.parse(localStorage.getItem('nexus_sessions') || '{}');
+        }
+
+        // ============================================================
+        // CHARACTER SHEET VIEWER/EDITOR
+        // ============================================================
+        function showCharacterSheet() {
+            const editor = document.getElementById('character-sheet-editor');
+            editor.value = characterSheet || '';
+            document.getElementById('character-sheet-modal').classList.add('active');
+            setTimeout(() => editor.focus(), 100);
+        }
+
+        function closeCharacterSheet() {
+            document.getElementById('character-sheet-modal').classList.remove('active');
+        }
+
+        function saveCharacterSheet() {
+            characterSheet = document.getElementById('character-sheet-editor').value;
+            closeCharacterSheet();
+            setStatus('Character sheet updated', 'success');
+        }
+
+        function clearCharacterSheet() {
+            if (confirm('Clear the entire character sheet? This cannot be undone.')) {
+                document.getElementById('character-sheet-editor').value = '';
+                characterSheet = '';
+                closeCharacterSheet();
+                setStatus('Character sheet cleared', 'success');
+            }
         }
 
         function showSessions() {
