@@ -651,9 +651,9 @@
             </div>
             
             <div style="margin: 16px 0;">
-                <input type="file" id="ref-doc-input" accept=".txt,.md,.pdf" style="display: none;" onchange="uploadReferenceDoc(event)">
+                <input type="file" id="ref-doc-input" accept=".txt,.md,.pdf,.json" style="display: none;" onchange="uploadReferenceDoc(event)">
                 <button class="modal-btn secondary" style="width: 100%;" onclick="document.getElementById('ref-doc-input').click()">
-                    + Upload Document (.txt, .md, .pdf)
+                    + Upload Document (.txt, .md, .pdf, .json)
                 </button>
             </div>
             
@@ -1976,6 +1976,20 @@ TIER CAPS:
 SESSION MANAGEMENT
 ================================================================================
 
+CONTEXT INTEGRITY PROTOCOL (Anti-Drift Safeguard)
+
+Long sessions degrade context recall. The Nexus MUST actively prevent this by:
+
+1. HARD CANON LOCK: Any event that occurred earlier in the current session is ESTABLISHED CANON. The Nexus does NOT ask the player to re-confirm or re-explain events that already happened in the conversation. If the player references something from earlier in the session ("I already met Malgus," "we discussed this," "remember the summit"), the Nexus scrolls back and re-reads the relevant exchange before responding. It does NOT claim uncertainty about events in its own context window.
+
+2. NPC CONTINUITY: Every significant NPC interaction from the current session must remain accessible. If the PC says "I want to find [NPC]" and that NPC appeared earlier in the session, the Nexus MUST reference the specific details of the earlier interaction (what was said, what was offered, what emotional state was conveyed) without asking the player to re-supply them.
+
+3. OFFER/PROMISE TRACKING: Any offer, threat, promise, or deal made by any NPC during the current session is treated as a live, retrievable fact. The Nexus tracks: WHO made the offer, WHAT was offered, WHAT conditions were stated, and HOW the PC responded. These are not suggestions — they are plot-critical data points.
+
+4. SESSION RECAP TRIGGER: If the Nexus detects that it is losing track of earlier events (a sign of context window pressure), it should proactively generate a brief internal summary of the session's key events, decisions, and active offers before continuing. This summary is NOT shown to the player — it is the Nexus recalibrating its own recall.
+
+5. NEVER ASK THE PLAYER TO DO YOUR JOB: The player should NEVER be asked "What happened at the summit?" or "What did Malgus say?" if that event occurred in the current conversation. The Nexus has the transcript. It re-reads it. Asking the player to replay established events is a protocol failure equivalent to narrating PC actions.
+
 CONTINUITY CHECKPOINT (Every 3-5 responses)
 - Current world state (dominant + pressure)
 - PC condition (physical/mental/social/reputation)
@@ -2447,6 +2461,62 @@ The Nexus awaits.
                         console.error('PDF extraction error:', pdfErr);
                         throw new Error(`PDF extraction failed: ${pdfErr.message}`);
                     }
+                } else if (file.name.endsWith('.json')) {
+                    // Parse JSON — check if it's a Nexus archive
+                    const rawText = await file.text();
+                    let jsonData;
+                    try {
+                        jsonData = JSON.parse(rawText);
+                    } catch (parseErr) {
+                        throw new Error('Invalid JSON file: ' + parseErr.message);
+                    }
+                    
+                    // Detect Nexus archive format (has messages array)
+                    if (jsonData.messages && Array.isArray(jsonData.messages)) {
+                        // This is a Nexus session archive — convert to readable reference doc
+                        const parts = [];
+                        parts.push('=== NEXUS SESSION ARCHIVE (Loaded as Reference) ===');
+                        if (jsonData.created) parts.push(`Archived: ${jsonData.created}`);
+                        if (jsonData.model) parts.push(`Model: ${jsonData.model}`);
+                        if (jsonData.type) parts.push(`Type: ${jsonData.type}`);
+                        parts.push('');
+                        
+                        // Include character sheet if present
+                        if (jsonData.character_sheet) {
+                            parts.push('=== CHARACTER SHEET (from archive) ===');
+                            parts.push(jsonData.character_sheet);
+                            parts.push('');
+                        }
+                        
+                        // Convert messages to readable transcript
+                        parts.push('=== SESSION TRANSCRIPT ===');
+                        parts.push('(This is a prior session loaded for continuity reference. Events described here are ESTABLISHED CANON.)');
+                        parts.push('');
+                        
+                        for (const msg of jsonData.messages) {
+                            const role = msg.role === 'user' ? 'PLAYER' : 'NEXUS';
+                            // Truncate very long assistant messages to keep token budget manageable
+                            let msgContent = msg.content;
+                            if (msg.role === 'assistant' && msgContent.length > 3000) {
+                                msgContent = msgContent.substring(0, 2800) + '\n\n[... truncated for token efficiency ...]';
+                            }
+                            parts.push(`--- ${role} ---`);
+                            parts.push(msgContent);
+                            parts.push('');
+                        }
+                        
+                        content = parts.join('\n');
+                        
+                        // Also load the character sheet if present and current sheet is empty
+                        if (jsonData.character_sheet && !characterSheet) {
+                            if (confirm('This archive contains a character sheet. Load it into your current session?')) {
+                                characterSheet = jsonData.character_sheet;
+                            }
+                        }
+                    } else {
+                        // Generic JSON — just stringify it readable
+                        content = JSON.stringify(jsonData, null, 2);
+                    }
                 } else {
                     // Read as text for .txt and .md files
                     content = await file.text();
@@ -2854,7 +2924,7 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                         },
                         body: JSON.stringify({
                             model: openaiSummaryModel,
-                            max_completion_tokens: 4096,
+                            max_completion_tokens: 8192,
                             temperature: 0.3,
                             messages: [{ role: 'user', content: summaryPrompt }]
                         })
@@ -2879,7 +2949,7 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                         },
                         body: JSON.stringify({
                             model: summaryModel,
-                            max_tokens: 4096,
+                            max_tokens: 8192,
                             temperature: 0.3,
                             messages: [{ role: 'user', content: summaryPrompt }]
                         })
@@ -2900,7 +2970,7 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{ parts: [{ text: summaryPrompt }] }],
-                            generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
+                            generationConfig: { temperature: 0.3, maxOutputTokens: 8192 }
                         })
                     });
                     
