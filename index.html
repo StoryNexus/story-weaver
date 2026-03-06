@@ -2672,7 +2672,7 @@ The Nexus awaits.
             document.getElementById('session-name-input').value = baseName;
             
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
-            const filename = `${baseName}_${timestamp}`;
+            const filename = `${baseName}_${timestamp}.json`;
             
             setStatus('Preparing download...', 'success');
             
@@ -2688,32 +2688,60 @@ The Nexus awaits.
             };
             
             try {
-                // Use setTimeout to avoid blocking the UI
-                setTimeout(() => {
+                const jsonString = JSON.stringify(data, null, 2);
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                
+                // Method 1: Try Web Share API (gives mobile share sheet for "Save to Files", AirDrop, etc.)
+                if (navigator.canShare) {
                     try {
-                        setStatus('Creating file...', 'success');
-                        const jsonString = JSON.stringify(data, null, 2);
-                        const blob = new Blob([jsonString], { type: 'application/json' });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.href = url;
-                        a.download = `${filename}.json`;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(() => URL.revokeObjectURL(url), 100);
-                        
-                        setStatus(`Downloaded: ${filename}.json`, 'success');
-                    } catch (err) {
-                        console.error('Download error:', err);
-                        setStatus(`Download failed: ${err.message}`, 'error');
-                        alert(`Download failed: ${err.message}\n\nTry using Archive & Trim to reduce session size.`);
+                        const file = new File([blob], filename, { type: 'application/json' });
+                        if (navigator.canShare({ files: [file] })) {
+                            navigator.share({
+                                files: [file],
+                                title: 'Nexus Session',
+                                text: `Session: ${filename}`
+                            }).then(() => {
+                                setStatus(`Shared: ${filename}`, 'success');
+                            }).catch(err => {
+                                if (err.name !== 'AbortError') {
+                                    // Share failed, fall back to traditional download
+                                    _fallbackDownload(blob, filename);
+                                } else {
+                                    setStatus('Download cancelled', '');
+                                }
+                            });
+                            return;
+                        }
+                    } catch (shareErr) {
+                        console.log('Share API check failed, using fallback:', shareErr);
                     }
-                }, 100);
+                }
+                
+                // Method 2: Traditional download (desktop fallback)
+                _fallbackDownload(blob, filename);
+                
             } catch (err) {
-                console.error('Save preparation error:', err);
+                console.error('Save error:', err);
                 setStatus(`Save failed: ${err.message}`, 'error');
                 alert(`Save failed: ${err.message}`);
+            }
+        }
+        
+        function _fallbackDownload(blob, filename) {
+            try {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                setStatus(`Downloaded: ${filename}`, 'success');
+            } catch (err) {
+                console.error('Download error:', err);
+                setStatus(`Download failed: ${err.message}`, 'error');
+                alert(`Download failed: ${err.message}\n\nTry using Archive & Trim to reduce session size.`);
             }
         }
 

@@ -2317,24 +2317,61 @@ The Nexus awaits.
             }
             
             const name = document.getElementById('session-name-input').value.trim() || 'session';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const filename = `${name}_${timestamp}.json`;
+            
             const data = {
                 version: "1.0",
                 created: new Date().toISOString(),
+                provider: getProvider(),
                 model: getModel(),
                 temperature: getTemperature(),
                 messages: messages,
-                character_sheet: characterSheet  // Include for cross-device sync
+                character_sheet: characterSheet
             };
             
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const jsonString = JSON.stringify(data, null, 2);
+            const blob = new Blob([jsonString], { type: 'application/json' });
+            
+            // Method 1: Try Web Share API (gives mobile share sheet)
+            if (navigator.canShare) {
+                try {
+                    const file = new File([blob], filename, { type: 'application/json' });
+                    if (navigator.canShare({ files: [file] })) {
+                        navigator.share({
+                            files: [file],
+                            title: 'Nexus Session',
+                            text: `Session: ${filename}`
+                        }).then(() => {
+                            setStatus(`Shared: ${filename}`, 'success');
+                        }).catch(err => {
+                            if (err.name !== 'AbortError') {
+                                _fallbackDownload(blob, filename);
+                            } else {
+                                setStatus('Download cancelled', '');
+                            }
+                        });
+                        return;
+                    }
+                } catch (shareErr) {
+                    console.log('Share API check failed, using fallback:', shareErr);
+                }
+            }
+            
+            // Method 2: Traditional download (desktop fallback)
+            _fallbackDownload(blob, filename);
+        }
+        
+        function _fallbackDownload(blob, filename) {
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${name}.json`;
+            a.download = filename;
+            document.body.appendChild(a);
             a.click();
-            URL.revokeObjectURL(url);
-            
-            setStatus(`Downloaded: ${name}.json`, 'success');
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 100);
+            setStatus(`Downloaded: ${filename}`, 'success');
         }
 
         function newSession() {
