@@ -2331,47 +2331,79 @@ The Nexus awaits.
             };
             
             const jsonString = JSON.stringify(data, null, 2);
-            const blob = new Blob([jsonString], { type: 'application/json' });
             
-            // Method 1: Try Web Share API (gives mobile share sheet)
-            if (navigator.canShare) {
-                try {
-                    const file = new File([blob], filename, { type: 'application/json' });
-                    if (navigator.canShare({ files: [file] })) {
-                        navigator.share({
-                            files: [file],
-                            title: 'Nexus Session',
-                            text: `Session: ${filename}`
-                        }).then(() => {
-                            setStatus(`Shared: ${filename}`, 'success');
-                        }).catch(err => {
-                            if (err.name !== 'AbortError') {
-                                _fallbackDownload(blob, filename);
-                            } else {
-                                setStatus('Download cancelled', '');
-                            }
-                        });
-                        return;
+            // Try Web Share API first (mobile share sheet)
+            if (navigator.share && navigator.canShare) {
+                // Try application/json first, then octet-stream as fallback
+                const mimeTypes = ['application/json', 'application/octet-stream', 'text/plain'];
+                
+                for (const mime of mimeTypes) {
+                    try {
+                        const file = new File([jsonString], filename, { type: mime });
+                        if (navigator.canShare({ files: [file] })) {
+                            navigator.share({
+                                files: [file],
+                                title: 'Nexus Session'
+                            }).then(() => {
+                                setStatus(`Saved: ${filename}`, 'success');
+                            }).catch(err => {
+                                if (err.name !== 'AbortError') {
+                                    _mobileFallbackSave(jsonString, filename);
+                                } else {
+                                    setStatus('Save cancelled', '');
+                                }
+                            });
+                            return; // Exit — share is in progress
+                        }
+                    } catch (e) {
+                        continue; // Try next MIME type
                     }
-                } catch (shareErr) {
-                    console.log('Share API check failed, using fallback:', shareErr);
                 }
             }
             
-            // Method 2: Traditional download (desktop fallback)
-            _fallbackDownload(blob, filename);
+            // Fallback for desktop or browsers without share support
+            _mobileFallbackSave(jsonString, filename);
         }
         
-        function _fallbackDownload(blob, filename) {
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            setTimeout(() => URL.revokeObjectURL(url), 100);
-            setStatus(`Downloaded: ${filename}`, 'success');
+        function _mobileFallbackSave(jsonString, filename) {
+            // Detect if we're likely on mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+            
+            if (isMobile) {
+                // On mobile without share API: open in new tab so user can long-press to save
+                // or use data URI which triggers download on most mobile browsers
+                try {
+                    const dataUri = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(jsonString);
+                    const win = window.open(dataUri, '_blank');
+                    if (!win) {
+                        // Popup blocked — copy to clipboard as last resort
+                        navigator.clipboard.writeText(jsonString).then(() => {
+                            alert(`Session copied to clipboard as JSON text.\n\nPaste into a text file and save as "${filename}"`);
+                            setStatus('Copied to clipboard', 'success');
+                        }).catch(() => {
+                            alert('Unable to save on this browser. Try using "Save to Browser" instead, or switch to desktop.');
+                            setStatus('Save failed — use Save to Browser', 'error');
+                        });
+                    } else {
+                        setStatus(`Saving: ${filename}`, 'success');
+                    }
+                } catch (err) {
+                    alert('Unable to save on this browser. Try using "Save to Browser" instead.');
+                    setStatus('Save failed', 'error');
+                }
+            } else {
+                // Desktop: traditional download
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                setStatus(`Downloaded: ${filename}`, 'success');
+            }
         }
 
         function newSession() {
