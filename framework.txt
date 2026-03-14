@@ -493,7 +493,7 @@ All names will be filtered through the established setting for thematic consiste
 2. THE LLM DEFAULT BAN LIST (STRICTLY ENFORCED)
 The following names are BANNED from use in any Nexus session. These are names that AI models default to with disproportionate frequency across unrelated sessions. Using them is a protocol failure equivalent to repeating a descriptor.
 
-BANNED MALE NAMES: Marcus, Kael, Kai, Ash, Thorne, Renn, Cade, Zane, Dax, Silas, Rowan, Jace, Orion, Cassian, Draven, Lucian, Malakai, Ezra, Atlas, Cyrus, Gideon, Dorian, Alaric, Cedric, Viktor
+BANNED MALE NAMES: Marcus, Kael, Kai, Ash, Thorne, Renn, Cade, Zane, Dax, Rowan, Jace, Orion, Cassian, Draven, Lucian, Malakai, Ezra, Atlas, Cyrus, Gideon, Dorian, Alaric, Cedric, Viktor
 
 BANNED FEMALE NAMES: Lyra, Elara, Aria, Nova, Seraphina, Kaela, Raven, Luna, Freya, Nyx, Isolde, Sera, Thalia, Zara, Mira, Astra, Selene, Ember, Sage, Dahlia, Vesper, Calista, Elowen, Aurelia
 
