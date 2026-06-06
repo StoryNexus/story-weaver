@@ -1,8 +1,44 @@
 # The Nexus
 
-**Version 3.1** — Master Engine Edition. An immersive RPG engine powered by AI — your Game Master for genre-flexible, consequence-driven adventures across Claude, ChatGPT, and Gemini.
+**Version 3.2** — Scope & Aspiration Edition. An immersive RPG engine powered by AI — your Game Master for genre-flexible, consequence-driven adventures across Claude, ChatGPT, and Gemini.
 
-## What's New in 3.1
+## What's New in 3.2
+
+### Narrative Scope System
+- **Narrative Scope per Tier**: Each tier defines scope boundaries (Personal→Local, Local→Regional, Regional→Galactic, Galactic→Mythic)
+- **Narrative Scope Enforcement**: Mandatory rules prevent scope creep — not every story saves the galaxy
+- **The Authority Figure Problem**: When PC defers to seniors, they actually handle it (no fake agency)
+- **Scope Escalation Rules**: Scope only expands after characters earn story arcs at current level
+- **When the PC Defers**: 4-step protocol honoring chain of command and NPC autonomy
+- **Scope Violation Red Flag**: Added to railroading safeguards — watch for artificial scope inflation
+
+### PC Aspiration & Specialization
+- **Aspiration Trajectory**: Long-term goal tracking with milestone markers (separate from immediate arcs)
+- **Arc-Milestone Alignment**: Every arc connects meaningfully to the character's aspiration
+- **Milestone Check**: Progress verification every 2-3 arcs keeps aspiration relevant
+- **Organic Specialization Recognition**: World notices PC's demonstrated aptitudes and proactively offers advancement tracks
+- **Pattern Tracking**: Silent aptitude monitoring (3-5 instances threshold) — specialization emerges from play, not character sheet
+
+### Storytelling Refinements
+- **Observational Appraisal**: Full physical description tier added — triggered when PC actively looks at someone
+- **Complication Type Rotation**: 7 categories (positional, environmental, resource, social, temporal, informational, physical) — no defaulting to injury
+- **Anti-Spiral Rule**: Max one injury per encounter from complications (prevents injury stacking)
+- **Tier-Scaled Injury Severity**: Tier 1 gets bruises/cuts, not torn muscles or broken bones
+- **Fail-Margin Injury Scaling**: Fail by 1-4 is a nick, Fail by 10+ is catastrophic
+- **Injury Description Calibration**: Use full spectrum of injury language appropriate to severity
+- **Meta-Language Bleed**: New railroading red flag — no game mechanics exposed in dialogue (no "roll for this")
+- **Setup Phase Meta-Language Rule**: Framework terms (DC, Pressure, Tension Axis) allowed in menus only, forbidden in narrative
+- **Context Integrity Protocol**: Anti-drift safeguard for long sessions — Hard Canon Lock, NPC Continuity, Offer/Promise Tracking
+
+### Technical & Dependency Updates
+- **Claude Opus 4.7** added to model list
+- **Summary token limit doubled**: 4096 → 8192 (deeper continuity preservation)
+- **JSON archive loading**: Reference documents now support `.json` files in addition to `.txt`, `.md`, `.pdf`
+- **Character Sheet viewer/editor**: Button (📋) in web UI for real-time sheet editing
+- **Mobile save fix**: Web Share API with MIME cycling for reliable mobile saves
+- **Google AI migration**: `pip install google-genai` (was `google-generativeai`)
+
+## What Was New in 3.1
 
 ### Dialogue Overhaul
 - **Advance the Ball Directive**: NPCs must escalate, pivot, concede, or misdirect — never re-litigate
@@ -88,18 +124,19 @@
 ## Features
 
 ### Core System
-- **Nexus Framework v3.1**: Complete RPG system with tiered character creation, narrative architecture, combat anatomy, NPC agenda clocks, and prose calibration
+- **Nexus Framework v3.2**: Complete RPG system with tiered character creation, narrative scope enforcement, aspiration tracking, organic specialization, and refined storytelling mechanics
 - **13 World States**: Dystopian, Utopian, Frontier, Balanced, Chaos, Decadent, Occupied, Gilded, Liminal, Enclave, Noir, Dying, Mythic — each with Information, Currency, Justice, and Mobility profiles
 - **Dynamic State Shifts**: World states blend, shift, and rupture based on your actions
 - **Player Agency Protection**: Multiple redundant safeguards prevent AI from narrating your character's actions
 - **Conditioned Response Engine**: NPCs react based on accumulated emotional/physical context, not just immediate stimulus
 
 ### Technical Features
-- **📚 Reference Documents**: Upload playbooks, rules, maps (supports .txt, .md, .pdf)
+- **📚 Reference Documents**: Upload playbooks, rules, maps (supports `.txt`, `.md`, `.pdf`, `.json`)
 - **Prose Calibration Engine**: Fine-tune writing style with author references and density controls
 - **Character Sheet Continuity**: Persistent tracking with rolling summary consolidation
+- **Character Sheet Editor**: Real-time editing via 📋 button in web UI
 - **Save/Load Sessions**: Pick up any campaign where you left off
-- **Model Selection**: Claude Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Haiku 4.5
+- **Model Selection**: Claude Opus 4.7, Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Haiku 4.5
 - **Multi-Provider Support**: Anthropic Claude, Google Gemini (up to 3.1 Pro), and OpenAI (GPT-5.2, GPT-5 Mini, GPT-4o)
 - **Temperature Control**: Dial creativity up for wild sessions, down for consistency
 - **Mobile Server**: Play on your phone while running locally on desktop
@@ -113,7 +150,7 @@
 pip install customtkinter anthropic PyPDF2 --break-system-packages
 
 # Optional: for Google AI support
-pip install google-generativeai --break-system-packages
+pip install google-genai --break-system-packages
 
 # Optional: for OpenAI support
 pip install openai --break-system-packages
@@ -155,17 +192,18 @@ Type `Begin` to start a new session. The Nexus will guide you through:
 
 ## Character Tiers
 
-| Tier | Name | Skill Budget | Skill Range | Entry Style | Example |
-|------|------|-------------|-------------|-------------|---------|
-| 1 | **Origin** | 15 points | -2 to +5 | Origin Arc (default) | Farm boy, raw recruit, untrained Force-sensitive |
-| 2 | **Journeyman** | 27 points | -2 to +7 | Origin Arc or Cold Open | Padawan, seasoned merc, junior detective |
-| 3 | **Veteran** | 36 points | -2 to +9 | Cold Open (mandatory) | Jedi Knight, master thief, spec-ops |
-| 4 | **Legend** | 45 points | -2 to +9 | Cold Open + Legacy Complication | Jedi Master, Sith Lord, galactic crime boss |
+| Tier | Name | Skill Budget | Skill Range | Entry Style | Scope | Example |
+|------|------|-------------|-------------|-------------|-------|---------|
+| 1 | **Origin** | 15 points | -2 to +5 | Origin Arc (default) | Personal | Farm boy, raw recruit, untrained Force-sensitive |
+| 2 | **Journeyman** | 27 points | -2 to +7 | Origin Arc or Cold Open | Local | Padawan, seasoned merc, junior detective |
+| 3 | **Veteran** | 36 points | -2 to +9 | Cold Open (mandatory) | Regional | Jedi Knight, master thief, spec-ops |
+| 4 | **Legend** | 45 points | -2 to +9 | Cold Open + Legacy Complication | Galactic | Jedi Master, Sith Lord, galactic crime boss |
 
 ### Tier-Adjusted Gameplay
 - **Difficulty**: DCs scale with tier (Tier 1: forgiving 10-15, Tier 4: legendary 18-25)
 - **Advancement**: Origin Arc characters level faster; Legends grow in depth, not numbers
-- **Skill Caps**: Tier 1 caps at +5 during Origin, rising to +7 after. Tier 3-4 cap at +9.
+- **Skill Caps**: Tier 1 caps at +5 during Origin, rising to +7 after. Tier 3-4 cap at +9
+- **Narrative Scope**: Each tier operates at a specific scope level; scope expansion requires earned story progression
 
 ## Keyboard Shortcuts
 
@@ -194,6 +232,9 @@ Choose between:
 - **Quick** (Haiku): Fast, cheaper — good for routine trims
 - **Deep** (Sonnet): Better continuity preservation — recommended for complex campaigns
 
+### Summary Depth
+- **Token limit**: 8192 (doubled from 4096) for deeper preservation of narrative texture
+
 ### Character Sheet Format
 The consolidated sheet includes:
 1. **Narrative Lens** — Voice, tension, pacing, thematic threads, dramatic questions
@@ -204,6 +245,7 @@ The consolidated sheet includes:
 6. **Causal Chain** — How decisions led to current state
 7. **Open Loops** — Immediate, short-term, and long-game threads
 8. **Campaign Chronicle** — Append-only timeline of major events
+9. **Aspiration & Specialization** — Character's long-term goals and recognized aptitudes
 
 ## In-Game Commands
 
@@ -222,10 +264,11 @@ The consolidated sheet includes:
 
 | Model | Best For | Cost* |
 |-------|----------|------|
-| **Opus 4.6** | Most advanced, complex narratives, nuanced NPCs | ~$0.075/exchange |
-| **Opus 4.5** | High quality, complex reasoning | ~$0.075/exchange |
+| **Opus 4.7** | Latest, most advanced — for complex narratives and nuanced NPCs | ~$0.075/exchange |
+| **Opus 4.6** | High performance, complex reasoning | ~$0.075/exchange |
+| **Opus 4.5** | Solid all-around | ~$0.075/exchange |
 | **Sonnet 4.6** | **Recommended default.** Near-Opus quality at Sonnet pricing | ~$0.015/exchange |
-| **Sonnet 4.5** | Still solid, slightly cheaper on cached prompts | ~$0.015/exchange |
+| **Sonnet 4.5** | Slightly cheaper on cached prompts | ~$0.015/exchange |
 | **Haiku 4.5** | Quick sessions, testing, budget-conscious | ~$0.002/exchange |
 
 ### OpenAI (ChatGPT)
@@ -262,6 +305,8 @@ The Nexus respects player agency with multiple protections:
 - ✅ Stops after describing situations (never assumes PC actions)
 - ✅ Never narrates "you feel/think/decide" without player input
 - ✅ Explicit checkpoints in combat and social scenes
+- ✅ Scope enforcement — stories stay at character tier scope level
+- ✅ Meta-language isolation — no game mechanics in narrative dialogue
 - ✅ Concrete examples of violations in framework
 
 If the AI ever railroads: **"Stop. You're narrating my character's actions. Let me decide."**
@@ -278,7 +323,7 @@ If the AI ever railroads: **"Stop. You're narrating my character's actions. Let 
 ```
 nexus/
 ├── storyteller.py       # Desktop application
-├── framework.txt        # Nexus Framework v3.1
+├── framework.txt        # Nexus Framework v3.2
 ├── character_sheet.txt  # Persistent character data (rolling summary)
 ├── index.html           # Web version
 ├── nexus.html           # Mobile-optimized web version
@@ -288,7 +333,25 @@ nexus/
 
 ## Version History
 
-**v3.1** (Current) — Master Engine Edition
+**v3.2** (Current) — Scope & Aspiration Edition
+- Narrative Scope system: scope enforcement, tier-based scope levels, scope escalation rules
+- Authority Figure Problem + When the PC Defers (4-step chain-of-command protocol)
+- PC Aspiration Trajectory with milestone tracking and arc alignment
+- Organic Specialization Recognition via pattern tracking
+- Observational Appraisal (full physical descriptions)
+- Complication Type Rotation (7 categories, no injury defaults)
+- Anti-Spiral Rule (max one injury per encounter)
+- Tier-Scaled Injury Severity + Fail-Margin Scaling
+- Meta-Language Bleed detection + Setup Phase Meta-Language Rule
+- Context Integrity Protocol (Hard Canon Lock, NPC Continuity, Offer/Promise Tracking)
+- Claude Opus 4.7 added to model list
+- Summary token limit doubled (4096 → 8192)
+- JSON archive document support
+- Character Sheet viewer/editor (📋 button)
+- Mobile save fix (Web Share API with MIME cycling)
+- Google AI migration: `google-generativeai` → `google-genai`
+
+**v3.1** — Master Engine Edition
 - OpenAI ChatGPT API integration (GPT-5.2, GPT-5 Mini, GPT-4o across all interfaces)
 - Advance the Ball Directive + Silent Turn (dialogue anti-looping)
 - Scene Disruption Protocol (organic loop-breaking)
