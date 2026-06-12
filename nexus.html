@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- The Nexus — nexus.html (mobile) | June 2026 patch: external framework fetch, model catalog
+         refresh, sampling-parameter gating, session round-trip preservation (reference_documents
+         no longer stripped on re-save), injection/quota/key-check fixes -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Nexus</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #08080f;
+            --bg-mid: #0e0e1a;
+            --bg-light: #161625;
+            --accent: #c084fc;
+            --accent-hover: #d8b4fe;
+            --text: #e4e0ed;
+            --text-dim: #9690a8;
+            --text-muted: #5c5872;
+            --border: #2a2545;
+            --success: #6ee7b7;
+            --error: #fca5a5;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-mid);
+            padding: 12px 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .header h1 {
+            color: var(--accent);
+            font-size: 1.3em;
+            font-weight: normal;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .header-btn {
+            background: var(--bg-light);
+            color: var(--text-dim);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .header-btn:hover {
+            background: var(--border);
+            color: var(--text);
+        }
+
+        /* Chat Area */
+        .chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            line-height: 1.6;
+            font-size: 1em;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .message.user {
+            background: var(--bg-light);
+            align-self: flex-end;
+            border: 1px solid var(--border);
+        }
+
+        .message.assistant {
+            background: var(--bg-mid);
+            align-self: flex-start;
+            border: 1px solid var(--border);
+        }
+
+        .message-role {
+            font-size: 0.75em;
+            font-weight: bold;
+            margin-bottom: 6px;
+            font-family: inherit;
+        }
+
+        .message.user .message-role {
+            color: var(--text-dim);
+        }
+
+        .message.assistant .message-role {
+            color: var(--accent);
+        }
+
+        .message-content {
+            color: var(--text);
+        }
+
+        /* Welcome */
+        .welcome {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-dim);
+        }
+
+        .welcome h2 {
+            color: var(--accent);
+            font-size: 1.8em;
+            margin-bottom: 16px;
+            font-weight: normal;
+        }
+
+        /* Input Area */
+        .input-area {
+            background: var(--bg-mid);
+            padding: 16px 20px;
+            border-top: 1px solid var(--border);
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        #message-input {
+            width: 100%;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1em;
+            resize: none;
+            min-height: 48px;
+            max-height: 150px;
+            line-height: 1.5;
+        }
+
+        #message-input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        #message-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        #send-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #c084fc 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 1em;
+            transition: background 0.2s;
+            align-self: flex-end;
+        }
+
+        #send-btn:hover {
+            background: var(--accent-hover);
+        }
+
+        #send-btn:disabled {
+            background: var(--text-muted);
+            cursor: not-allowed;
+        }
+
+        /* Status */
+        .status {
+            text-align: center;
+            font-size: 0.8em;
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-family: inherit;
+        }
+
+        .status.error {
+            color: var(--error);
+        }
+
+        .status.success {
+            color: var(--success);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-mid);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal h3 {
+            color: var(--accent);
+            margin-bottom: 16px;
+            font-weight: normal;
+        }
+
+        .modal label {
+            display: block;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 1em;
+            margin-bottom: 16px;
+        }
+
+        .modal input:focus, .modal select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.95em;
+            border: none;
+        }
+
+        .modal-btn.primary {
+            background: var(--accent);
+            color: var(--bg-dark);
+        }
+
+        .modal-btn.secondary {
+            background: var(--bg-light);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* Sessions list */
+        .sessions-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .session-item {
+            padding: 10px 12px;
+            background: var(--bg-light);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .session-item:hover {
+            border-color: var(--accent);
+        }
+
+        .session-item .name {
+            color: var(--text);
+        }
+
+        .session-item .date {
+            color: var(--text-muted);
+            font-size: 0.8em;
+        }
+
+        .session-item .delete-btn {
+            color: var(--error);
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px 8px;
+            font-size: 1.1em;
+        }
+
+        /* Loading animation */
+        .typing-indicator {
+            display: inline-block;
+        }
+
+        .typing-indicator span {
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Mobile adjustments */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.1em;
+            }
+
+            .header-btn {
+                padding: 6px 10px;
+                font-size: 0.8em;
+            }
+
+            .message {
+                max-width: 95%;
+                font-size: 0.95em;
+            }
+
+            .chat-container {
+                padding: 12px;
+            }
+
+            .input-area {
+                padding: 12px;
+            }
+
+            #send-btn {
+                padding: 12px 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>✦ The Nexus</h1>
+        <div class="header-buttons">
+            <button class="header-btn" onclick="showCharacterSheet()">📋 Sheet</button>
+            <button class="header-btn" onclick="showSettings()">⚙ Settings</button>
+            <button class="header-btn" onclick="showSessions()">📁 Sessions</button>
+            <button class="header-btn" onclick="newSession()">✦ New</button>
+        </div>
+    </div>
+
+    <div class="chat-container" id="chat-container">
+        <div class="welcome">
+            <h2>The Nexus Awaits</h2>
+            <p>The framework loads from framework.txt.<br>Type "Begin" to start a new session.</p>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-container">
+            <div class="input-wrapper">
+                <textarea id="message-input" placeholder="Enter your action..." rows="1"></textarea>
+            </div>
+            <button id="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+        <div class="status" id="status">Ready</div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal-overlay" id="settings-modal">
+        <div class="modal">
+            <h3>Settings</h3>
+
+            <label>Provider</label>
+            <select id="provider-select" onchange="onProviderChange()">
+                <option value="anthropic">Anthropic (Claude)</option>
+                <option value="google">Google AI (Gemini)</option>
+                <option value="openai">OpenAI (ChatGPT)</option>
+            </select>
+
+            <div id="anthropic-key-section">
+                <label>Anthropic API Key</label>
+                <input type="password" id="api-key-input" placeholder="sk-ant-...">
+            </div>
+
+            <div id="google-key-section" style="display: none;">
+                <label>Google AI Studio API Key</label>
+                <input type="password" id="google-api-key-input" placeholder="AIza...">
+            </div>
+
+            <div id="openai-key-section" style="display: none;">
+                <label>OpenAI API Key</label>
+                <input type="password" id="openai-api-key-input" placeholder="sk-...">
+            </div>
+
+            <label>Model</label>
+            <select id="model-select">
+                <!-- options rendered from MODEL_CATALOG on open -->
+            </select>
+
+            <label>Temperature: <span id="temp-display">1.0</span></label>
+            <input type="range" id="temp-slider" min="0" max="1.0" step="0.05" value="1.0" oninput="updateTempDisplay()">
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Fable 5, Opus 4.8, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
+
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeSettings()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveSettings()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sessions Modal -->
+    <div class="modal-overlay" id="sessions-modal">
+        <div class="modal">
+            <h3>Sessions</h3>
+            <div class="sessions-list" id="sessions-list">
+                <p style="color: var(--text-muted);">No saved sessions yet.</p>
+            </div>
+
+            <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+                <button class="modal-btn secondary" style="flex:1" onclick="loadFromFile()">📂 Open File</button>
+                <button class="modal-btn secondary" style="flex:1" onclick="saveToFile()">💾 Download</button>
+            </div>
+
+            <label>Save to browser as:</label>
+            <input type="text" id="session-name-input" placeholder="Session name...">
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeSessions()">Close</button>
+                <button class="modal-btn primary" onclick="saveSession()">Save to Browser</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="character-sheet-modal">
+        <div class="modal" style="max-width: 700px;">
+            <h3>📋 Character Sheet</h3>
+            <p style="color: var(--text-dim); font-size: 0.9em; margin-bottom: 12px;">
+                View and edit your persistent character sheet.
+            </p>
+            <textarea id="character-sheet-editor" style="
+                width: 100%;
+                min-height: 350px;
+                max-height: 55vh;
+                background: var(--bg-light);
+                border: 1px solid var(--border);
+                color: var(--text);
+                padding: 12px;
+                border-radius: 8px;
+                font-size: 0.9em;
+                font-family: inherit;
+                line-height: 1.6;
+                resize: vertical;
+            " placeholder="No character sheet yet. Play a session and use Archive & Trim to generate one, or paste one here manually."></textarea>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="clearCharacterSheet()">Clear</button>
+                <button class="modal-btn secondary" onclick="closeCharacterSheet()">Cancel</button>
+                <button class="modal-btn primary" onclick="saveCharacterSheet()">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // NEXUS FRAMEWORK — single source of truth: framework.txt
+        // The framework is no longer embedded. Update framework.txt;
+        // both web clients pick it up on next load. Sending is gated:
+        // no framework, no session (fail closed).
+        // ============================================================
+        const FRAMEWORK_URL = 'framework.txt';
+        let NEXUS_FRAMEWORK = null;   // null until loaded
+
+        async function loadFramework() {
+            try {
+                setStatus('Loading framework…');
+                const res = await fetch(`${FRAMEWORK_URL}?v=${Date.now()}`, { cache: 'no-store' });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const text = await res.text();
+                if (text.trim().length < 5000) throw new Error('framework.txt looks empty or truncated');
+                NEXUS_FRAMEWORK = text;
+                setStatus(`Framework loaded (${(text.length / 1024).toFixed(0)} KB)`, 'success');
+            } catch (err) {
+                NEXUS_FRAMEWORK = null;
+                setStatus(`Framework load failed: ${err.message}`, 'error');
+            }
+        }
+
+        // ============================================================
+        // MODEL CATALOG — verified June 10, 2026. The ONLY place model
+        // IDs live. sampling:false = model rejects the `temperature`
+        // parameter (Anthropic removed sampling params from Opus 4.7
+        // onward; OpenAI's GPT-5 thinking tiers reject it as well).
+        // gemini-2.0-flash was shut down June 1, 2026.
+        // Keep this block in sync with index.html.
+        // ============================================================
+        const MODEL_CATALOG = {
+            anthropic: {
+                default: 'claude-sonnet-4-6',
+                summary: { deep: 'claude-sonnet-4-6', quick: 'claude-haiku-4-5-20251001' },
+                models: [
+                    { id: 'claude-fable-5',            label: 'Claude Fable 5 (Frontier)',    sampling: false },
+                    { id: 'claude-opus-4-8',           label: 'Claude Opus 4.8 (Best)',       sampling: false },
+                    { id: 'claude-sonnet-4-6',         label: 'Claude Sonnet 4.6 (Balanced)' },
+                    { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast)' }
+                ]
+            },
+            google: {
+                default: 'gemini-3.5-flash',
+                summary: { deep: 'gemini-3.1-pro-preview', quick: 'gemini-3.1-flash-lite' },
+                models: [
+                    { id: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro (Best, preview)' },
+                    { id: 'gemini-3.5-flash',       label: 'Gemini 3.5 Flash (Stable flagship)' },
+                    { id: 'gemini-3.1-flash-lite',  label: 'Gemini 3.1 Flash-Lite (Fast)' },
+                    { id: 'gemini-2.5-pro',         label: 'Gemini 2.5 Pro (Legacy)' },
+                    { id: 'gemini-2.5-flash',       label: 'Gemini 2.5 Flash (Legacy)' }
+                ]
+            },
+            openai: {
+                default: 'gpt-5.5',
+                summary: { deep: 'gpt-5.5', quick: 'gpt-5.4-mini' },
+                models: [
+                    { id: 'gpt-5.5',             label: 'GPT-5.5 Thinking (Best)',   sampling: false },
+                    { id: 'gpt-5.5-chat-latest', label: 'GPT-5.5 Instant (Balanced)' },
+                    { id: 'gpt-5.4-mini',        label: 'GPT-5.4 Mini (Fast)',       sampling: false },
+                    { id: 'gpt-5.4-nano',        label: 'GPT-5.4 Nano (Budget)',     sampling: false }
+                ]
+            }
+        };
+
+        function modelInfo(provider, id) {
+            return MODEL_CATALOG[provider].models.find(m => m.id === id) || null;
+        }
+
+        function renderModelOptions(provider) {
+            const cfg = MODEL_CATALOG[provider];
+            const sel = document.getElementById('model-select');
+            sel.innerHTML = cfg.models.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+            const saved = localStorage.getItem('nexus_model');
+            sel.value = modelInfo(provider, saved) ? saved : cfg.default;
+        }
+
+        // ============================================================
+        // STATE
+        // ============================================================
+        let messages = [];
+        let characterSheet = '';  // Portable character sheet from session
+        let sessionExtras = {};   // Fields written by other Nexus clients (reference_documents,
+                                  // future fields) — preserved verbatim on save, never edited here.
+                                  // This is the fix for the round-trip data-loss bug.
+        let isGenerating = false;
+        let abortController = null;
+
+        // ============================================================
+        // SETTINGS
+        // ============================================================
+        function getProvider() {
+            return localStorage.getItem('nexus_provider') || 'anthropic';
+        }
+
+        function getApiKey() {
+            return localStorage.getItem('nexus_api_key') || '';
+        }
+
+        function getGoogleApiKey() {
+            return localStorage.getItem('nexus_google_api_key') || '';
+        }
+
+        function getOpenaiApiKey() {
+            return localStorage.getItem('nexus_openai_api_key') || '';
+        }
+
+        function getModel() {
+            // Validates against the catalog — a stale ID left in
+            // localStorage (e.g. claude-opus-4-7) silently migrates
+            // to the provider default instead of 404ing.
+            const provider = getProvider();
+            const stored = localStorage.getItem('nexus_model');
+            return modelInfo(provider, stored) ? stored : MODEL_CATALOG[provider].default;
+        }
+
+        function getTemperature() {
+            return parseFloat(localStorage.getItem('nexus_temperature') || '1.0');
+        }
+
+        function onProviderChange() {
+            const provider = document.getElementById('provider-select').value;
+            document.getElementById('anthropic-key-section').style.display = provider === 'anthropic' ? 'block' : 'none';
+            document.getElementById('google-key-section').style.display   = provider === 'google'   ? 'block' : 'none';
+            document.getElementById('openai-key-section').style.display   = provider === 'openai'   ? 'block' : 'none';
+            renderModelOptions(provider);
+        }
+
+        function showSettings() {
+            document.getElementById('provider-select').value = getProvider();
+            document.getElementById('api-key-input').value = getApiKey();
+            document.getElementById('google-api-key-input').value = getGoogleApiKey();
+            document.getElementById('openai-api-key-input').value = getOpenaiApiKey();
+            document.getElementById('temp-slider').value = getTemperature();
+            onProviderChange();  // renders model options + restores saved selection
+            updateTempDisplay();
+            document.getElementById('settings-modal').classList.add('active');
+        }
+
+        function closeSettings() {
+            document.getElementById('settings-modal').classList.remove('active');
+        }
+
+        function saveSettings() {
+            const provider = document.getElementById('provider-select').value;
+            const apiKey = document.getElementById('api-key-input').value.trim();
+            const googleApiKey = document.getElementById('google-api-key-input').value.trim();
+            const openaiApiKey = document.getElementById('openai-api-key-input').value.trim();
+            const model = document.getElementById('model-select').value;
+            const temp = document.getElementById('temp-slider').value;
+
+            localStorage.setItem('nexus_provider', provider);
+            if (apiKey) {
+                localStorage.setItem('nexus_api_key', apiKey);
+            }
+            if (googleApiKey) {
+                localStorage.setItem('nexus_google_api_key', googleApiKey);
+            }
+            if (openaiApiKey) {
+                localStorage.setItem('nexus_openai_api_key', openaiApiKey);
+            }
+            localStorage.setItem('nexus_model', model);
+            localStorage.setItem('nexus_temperature', temp);
+
+            closeSettings();
+            setStatus('Settings saved', 'success');
+        }
+
+        function updateTempDisplay() {
+            const val = document.getElementById('temp-slider').value;
+            document.getElementById('temp-display').textContent = parseFloat(val).toFixed(1);
+        }
+
+        // ============================================================
+        // SESSIONS
+        // ============================================================
+        function getSessions() {
+            return JSON.parse(localStorage.getItem('nexus_sessions') || '{}');
+        }
+
+        // ============================================================
+        // CHARACTER SHEET VIEWER/EDITOR
+        // ============================================================
+        function showCharacterSheet() {
+            const editor = document.getElementById('character-sheet-editor');
+            editor.value = characterSheet || '';
+            document.getElementById('character-sheet-modal').classList.add('active');
+            setTimeout(() => editor.focus(), 100);
+        }
+
+        function closeCharacterSheet() {
+            document.getElementById('character-sheet-modal').classList.remove('active');
+        }
+
+        function saveCharacterSheet() {
+            characterSheet = document.getElementById('character-sheet-editor').value;
+            closeCharacterSheet();
+            setStatus('Character sheet updated', 'success');
+        }
+
+        function clearCharacterSheet() {
+            if (confirm('Clear the entire character sheet? This cannot be undone.')) {
+                document.getElementById('character-sheet-editor').value = '';
+                characterSheet = '';
+                closeCharacterSheet();
+                setStatus('Character sheet cleared', 'success');
+            }
+        }
+
+        function showSessions() {
+            const sessions = getSessions();
+            const list = document.getElementById('sessions-list');
+
+            let html = '';
+
+            // Local storage sessions — names are URI-encoded into the
+            // handlers and HTML-escaped for display so apostrophes and
+            // quotes ("Reva's Run") can't break load/delete.
+            if (Object.keys(sessions).length > 0) {
+                html += '<div style="color: var(--text-muted); font-size: 0.85em; margin-bottom: 8px;">Browser Sessions:</div>';
+                html += Object.entries(sessions)
+                    .sort((a, b) => new Date(b[1].date) - new Date(a[1].date))
+                    .map(([name, data]) => {
+                        const enc = encodeURIComponent(name);
+                        return `
+                        <div class="session-item" onclick="loadSession(decodeURIComponent('${enc}'))">
+                            <div>
+                                <div class="name">${escapeHtml(name)}</div>
+                                <div class="date">${new Date(data.date).toLocaleDateString()}</div>
+                            </div>
+                            <button class="delete-btn" onclick="event.stopPropagation(); deleteSession(decodeURIComponent('${enc}'))">×</button>
+                        </div>`;
+                    }).join('');
+            }
+
+            if (!html) {
+                html = '<p style="color: var(--text-muted);">No browser sessions yet.</p>';
+            }
+
+            list.innerHTML = html;
+            document.getElementById('sessions-modal').classList.add('active');
+        }
+
+        function closeSessions() {
+            document.getElementById('sessions-modal').classList.remove('active');
+        }
+
+        function saveSession() {
+            const name = document.getElementById('session-name-input').value.trim();
+            if (!name) {
+                alert('Please enter a session name.');
+                return;
+            }
+
+            if (messages.length === 0) {
+                alert('No messages to save.');
+                return;
+            }
+
+            const sessions = getSessions();
+            sessions[name] = {
+                ...sessionExtras,
+                date: new Date().toISOString(),
+                messages: messages,
+                character_sheet: characterSheet
+            };
+
+            // localStorage has a ~5 MB quota; sessions carrying
+            // reference documents from index.html can exceed it.
+            // Fail loudly, not silently.
+            try {
+                localStorage.setItem('nexus_sessions', JSON.stringify(sessions));
+            } catch (err) {
+                alert('Browser storage is full — this session is too large for localStorage (reference documents are usually the culprit). Use 💾 Download instead.');
+                setStatus('Save failed: storage quota exceeded', 'error');
+                return;
+            }
+
+            document.getElementById('session-name-input').value = '';
+            showSessions();
+            setStatus(`Saved: ${name}`, 'success');
+        }
+
+        function loadSession(name) {
+            const sessions = getSessions();
+            if (sessions[name]) {
+                const { messages: loadedMessages, character_sheet, date, ...rest } = sessions[name];
+                messages = loadedMessages;
+                characterSheet = character_sheet || '';
+                sessionExtras = rest;  // preserve fields from other clients
+                renderMessages();
+                closeSessions();
+                setStatus(`Loaded: ${name}`, 'success');
+            }
+        }
+
+        function deleteSession(name) {
+            if (confirm(`Delete "${name}"?`)) {
+                const sessions = getSessions();
+                delete sessions[name];
+                localStorage.setItem('nexus_sessions', JSON.stringify(sessions));
+                showSessions();
+            }
+        }
+
+        // Load from file (desktop JSON format)
+        function loadFromFile() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                try {
+                    const text = await file.text();
+                    const data = JSON.parse(text);
+
+                    if (data.messages && Array.isArray(data.messages)) {
+                        // Capture everything this client doesn't edit
+                        // (reference_documents from index.html, any future
+                        // fields) so re-saving here never strips them.
+                        const { messages: loadedMessages, character_sheet,
+                                version, created, provider, model, temperature, ...rest } = data;
+                        messages = loadedMessages;
+                        characterSheet = character_sheet || '';
+                        sessionExtras = rest;
+
+                        renderMessages();
+                        closeSessions();
+                        const hasSheet = characterSheet ? ' (with character sheet)' : '';
+                        const refCount = Array.isArray(sessionExtras.reference_documents)
+                            ? sessionExtras.reference_documents.length : 0;
+                        const hasRefs = refCount > 0 ? ` + ${refCount} ref doc(s) preserved` : '';
+                        setStatus(`Loaded: ${file.name}${hasSheet}${hasRefs}`, 'success');
+                    } else {
+                        throw new Error('Invalid session format');
+                    }
+                } catch (err) {
+                    alert('Failed to load file: ' + err.message);
+                }
+            };
+            input.click();
+        }
+
+        // Save to file (desktop JSON format)
+        function saveToFile() {
+            if (messages.length === 0) {
+                alert('No messages to save.');
+                return;
+            }
+
+            const name = document.getElementById('session-name-input').value.trim() || 'session';
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            const filename = `${name}_${timestamp}.json`;
+
+            const data = {
+                ...sessionExtras,
+                version: "1.0",
+                created: new Date().toISOString(),
+                provider: getProvider(),
+                model: getModel(),
+                temperature: getTemperature(),
+                messages: messages,
+                character_sheet: characterSheet
+            };
+
+            const jsonString = JSON.stringify(data, null, 2);
+
+            // Try Web Share API first (mobile share sheet)
+            if (navigator.share && navigator.canShare) {
+                // Try application/json first, then octet-stream as fallback
+                const mimeTypes = ['application/json', 'application/octet-stream', 'text/plain'];
+
+                for (const mime of mimeTypes) {
+                    try {
+                        const file = new File([jsonString], filename, { type: mime });
+                        if (navigator.canShare({ files: [file] })) {
+                            navigator.share({
+                                files: [file],
+                                title: 'Nexus Session'
+                            }).then(() => {
+                                setStatus(`Saved: ${filename}`, 'success');
+                            }).catch(err => {
+                                if (err.name !== 'AbortError') {
+                                    _mobileFallbackSave(jsonString, filename);
+                                } else {
+                                    setStatus('Save cancelled', '');
+                                }
+                            });
+                            return; // Exit — share is in progress
+                        }
+                    } catch (e) {
+                        continue; // Try next MIME type
+                    }
+                }
+            }
+
+            // Fallback for desktop or browsers without share support
+            _mobileFallbackSave(jsonString, filename);
+        }
+
+        function _mobileFallbackSave(jsonString, filename) {
+            // Detect if we're likely on mobile
+            const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
+            if (isMobile) {
+                // On mobile without share API: open in new tab so user can long-press to save
+                // or use data URI which triggers download on most mobile browsers
+                try {
+                    const dataUri = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(jsonString);
+                    const win = window.open(dataUri, '_blank');
+                    if (!win) {
+                        // Popup blocked — copy to clipboard as last resort
+                        navigator.clipboard.writeText(jsonString).then(() => {
+                            alert(`Session copied to clipboard as JSON text.\n\nPaste into a text file and save as "${filename}"`);
+                            setStatus('Copied to clipboard', 'success');
+                        }).catch(() => {
+                            alert('Unable to save on this browser. Try using "Save to Browser" instead, or switch to desktop.');
+                            setStatus('Save failed — use Save to Browser', 'error');
+                        });
+                    } else {
+                        setStatus(`Saving: ${filename}`, 'success');
+                    }
+                } catch (err) {
+                    alert('Unable to save on this browser. Try using "Save to Browser" instead.');
+                    setStatus('Save failed', 'error');
+                }
+            } else {
+                // Desktop: traditional download
+                const blob = new Blob([jsonString], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                setStatus(`Downloaded: ${filename}`, 'success');
+            }
+        }
+
+        function newSession() {
+            if (messages.length > 0 && !confirm('Start a new session? Unsaved progress will be lost.')) {
+                return;
+            }
+            messages = [];
+
+            // Ask if user wants to keep character sheet for the new session
+            if (characterSheet) {
+                if (!confirm('Keep character sheet for the new session?\n\n(OK = Keep for continuation, Cancel = Clear for fresh start)')) {
+                    characterSheet = '';
+                }
+            }
+
+            // Reference docs ride along invisibly in this client —
+            // surface them before silently carrying or dropping them
+            const refCount = Array.isArray(sessionExtras.reference_documents)
+                ? sessionExtras.reference_documents.length : 0;
+            if (refCount > 0) {
+                if (!confirm(`This session carries ${refCount} reference document(s) from the full web app. Keep them for the new session?`)) {
+                    sessionExtras = {};
+                }
+            } else {
+                sessionExtras = {};
+            }
+
+            renderMessages();
+            setStatus('New session started');
+        }
+
+        // ============================================================
+        // CHAT
+        // ============================================================
+        function renderMessages() {
+            const container = document.getElementById('chat-container');
+
+            if (messages.length === 0) {
+                container.innerHTML = `
+                    <div class="welcome">
+                        <h2>The Nexus Awaits</h2>
+                        <p>The framework loads from framework.txt.<br>Type "Begin" to start a new session.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = messages.map(msg => `
+                <div class="message ${msg.role}">
+                    <div class="message-role">${msg.role === 'user' ? 'You' : 'The Nexus'}</div>
+                    <div class="message-content">${escapeHtml(msg.content)}</div>
+                </div>
+            `).join('');
+
+            scrollToBottom();
+        }
+
+        function addMessage(role, content) {
+            const container = document.getElementById('chat-container');
+
+            // Remove welcome if present
+            const welcome = container.querySelector('.welcome');
+            if (welcome) welcome.remove();
+
+            const div = document.createElement('div');
+            div.className = `message ${role}`;
+            div.innerHTML = `
+                <div class="message-role">${role === 'user' ? 'You' : 'The Nexus'}</div>
+                <div class="message-content">${escapeHtml(content)}</div>
+            `;
+            container.appendChild(div);
+            scrollToBottom();
+
+            return div;
+        }
+
+        function updateLastMessage(content) {
+            const messages = document.querySelectorAll('.message.assistant');
+            const last = messages[messages.length - 1];
+            if (last) {
+                last.querySelector('.message-content').textContent = content;
+                scrollToBottom();
+            }
+        }
+
+        function scrollToBottom() {
+            const container = document.getElementById('chat-container');
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function setStatus(text, type = '') {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = 'status ' + type;
+        }
+
+        // ============================================================
+        // API
+        // ============================================================
+        async function sendMessage() {
+            const input = document.getElementById('message-input');
+            const content = input.value.trim();
+
+            if (!content || isGenerating) return;
+
+            const provider = getProvider();
+            const apiKey = provider === 'anthropic' ? getApiKey() : provider === 'google' ? getGoogleApiKey() : getOpenaiApiKey();
+
+            if (!apiKey) {
+                showSettings();
+                alert(`Please enter your ${provider === 'anthropic' ? 'Anthropic' : provider === 'google' ? 'Google AI' : 'OpenAI'} API key first.`);
+                return;
+            }
+
+            // Fail closed: never run The Nexus without the framework.
+            // (Placed before messages.push so a failed load doesn't
+            // orphan a user message in history.)
+            if (!NEXUS_FRAMEWORK) {
+                await loadFramework();
+                if (!NEXUS_FRAMEWORK) {
+                    alert('framework.txt could not be loaded — The Nexus will not run without it.\n\nCheck that framework.txt sits beside this HTML file. Note: opening the page via file:// blocks fetch in most browsers — serve it (GitHub Pages, or: python -m http.server).');
+                    return;
+                }
+            }
+
+            // Add user message
+            messages.push({ role: 'user', content });
+            addMessage('user', content);
+            input.value = '';
+            input.style.height = 'auto';
+
+            // Start generating
+            isGenerating = true;
+            document.getElementById('send-btn').disabled = true;
+            document.getElementById('send-btn').textContent = 'Stop';
+            document.getElementById('send-btn').onclick = stopGeneration;
+            setStatus('Generating...');
+
+            // Add placeholder for assistant message
+            addMessage('assistant', '▌');
+
+            abortController = new AbortController();
+
+            try {
+                // Build full system prompt
+                let systemPrompt = NEXUS_FRAMEWORK;
+                if (characterSheet) {
+                    systemPrompt += '\n\n' + '='.repeat(60) + '\n';
+                    systemPrompt += 'PERSISTENT CHARACTER SHEET & CONTINUITY LOG\n';
+                    systemPrompt += '(Reference this for character details, relationships, and past events)\n';
+                    systemPrompt += '='.repeat(60) + '\n\n';
+                    systemPrompt += characterSheet;
+                }
+
+                let fullContent = '';
+
+                if (provider === 'anthropic') {
+                    // Anthropic Claude API — Opus 4.8 / Fable 5 reject
+                    // sampling parameters; temperature is gated per-model
+                    const aBody = {
+                        model: getModel(),
+                        max_tokens: 12288,
+                        system: systemPrompt,
+                        messages: messages.filter(m => m.role !== 'system'),
+                        stream: true
+                    };
+                    const aInfo = modelInfo('anthropic', aBody.model);
+                    if (!aInfo || aInfo.sampling !== false) aBody.temperature = getTemperature();
+
+                    const response = await fetch('https://api.anthropic.com/v1/messages', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'x-api-key': apiKey,
+                            'anthropic-version': '2023-06-01',
+                            'anthropic-dangerous-direct-browser-access': 'true'
+                        },
+                        body: JSON.stringify(aBody),
+                        signal: abortController.signal
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error?.message || `API Error: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                if (data === '[DONE]') continue;
+
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (parsed.type === 'content_block_delta' && parsed.delta?.text) {
+                                        fullContent += parsed.delta.text;
+                                        updateLastMessage(fullContent + '▌');
+                                    }
+                                } catch (e) {
+                                    // Skip parse errors for incomplete chunks
+                                }
+                            }
+                        }
+                    }
+                } else if (provider === 'google') {
+                    // Google Gemini API
+                    // Build conversation history for Gemini
+                    const geminiContents = [];
+
+                    for (const msg of messages.slice(0, -1)) {
+                        geminiContents.push({
+                            role: msg.role === 'user' ? 'user' : 'model',
+                            parts: [{ text: msg.content }]
+                        });
+                    }
+
+                    // Last user message
+                    geminiContents.push({
+                        role: 'user',
+                        parts: [{ text: messages[messages.length - 1].content }]
+                    });
+
+                    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${getModel()}:streamGenerateContent?alt=sse&key=${apiKey}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            contents: geminiContents,
+                            systemInstruction: {
+                                parts: [{ text: systemPrompt }]
+                            },
+                            generationConfig: {
+                                temperature: getTemperature(),
+                                maxOutputTokens: 12288
+                            }
+                        }),
+                        signal: abortController.signal
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error?.message || `API Error: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (parsed.candidates?.[0]?.content?.parts?.[0]?.text) {
+                                        fullContent += parsed.candidates[0].content.parts[0].text;
+                                        updateLastMessage(fullContent + '▌');
+                                    }
+                                } catch (e) {
+                                    // Skip parse errors
+                                }
+                            }
+                        }
+                    }
+                } else if (provider === 'openai') {
+                    // OpenAI Chat Completions API (streaming) — GPT-5
+                    // thinking tiers reject `temperature`; gated per-model
+                    const openaiMessages = [{ role: 'system', content: systemPrompt }];
+                    for (const msg of messages) {
+                        openaiMessages.push({ role: msg.role, content: msg.content });
+                    }
+
+                    const oBody = {
+                        model: getModel(),
+                        max_completion_tokens: 12288,
+                        messages: openaiMessages,
+                        stream: true
+                    };
+                    const oInfo = modelInfo('openai', oBody.model);
+                    if (!oInfo || oInfo.sampling !== false) oBody.temperature = getTemperature();
+
+                    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${apiKey}`
+                        },
+                        body: JSON.stringify(oBody),
+                        signal: abortController.signal
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json().catch(() => ({}));
+                        throw new Error(error.error?.message || `API Error: ${response.status}`);
+                    }
+
+                    const reader = response.body.getReader();
+                    const decoder = new TextDecoder();
+
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+
+                        const chunk = decoder.decode(value);
+                        const lines = chunk.split('\n');
+
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.slice(6);
+                                if (data === '[DONE]') continue;
+
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    if (parsed.choices?.[0]?.delta?.content) {
+                                        fullContent += parsed.choices[0].delta.content;
+                                        updateLastMessage(fullContent + '▌');
+                                    }
+                                } catch (e) {
+                                    // Skip parse errors for incomplete chunks
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // Finalize
+                messages.push({ role: 'assistant', content: fullContent });
+                updateLastMessage(fullContent);
+                setStatus('Ready', 'success');
+
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    setStatus('Stopped', '');
+                } else {
+                    console.error(error);
+                    setStatus(`Error: ${error.message}`, 'error');
+                    // Remove the placeholder message
+                    const lastMsg = document.querySelector('.message.assistant:last-child');
+                    if (lastMsg && lastMsg.querySelector('.message-content').textContent === '▌') {
+                        lastMsg.remove();
+                    }
+                    // Remove the user message from history since it failed
+                    messages.pop();
+                }
+            } finally {
+                isGenerating = false;
+                document.getElementById('send-btn').disabled = false;
+                document.getElementById('send-btn').textContent = 'Send';
+                document.getElementById('send-btn').onclick = sendMessage;
+                abortController = null;
+            }
+        }
+
+        function stopGeneration() {
+            if (abortController) {
+                abortController.abort();
+            }
+        }
+
+        // ============================================================
+        // INPUT HANDLING
+        // ============================================================
+        const input = document.getElementById('message-input');
+
+        // Auto-resize textarea
+        input.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+        });
+
+        // Enter to send, Shift+Enter for newline
+        input.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        loadFramework();
+
+        // Check for API key on load (all three providers)
+        if (!getApiKey() && !getGoogleApiKey() && !getOpenaiApiKey()) {
+            setTimeout(() => {
+                setStatus('Please set your API key in Settings', 'error');
+            }, 500);
+        }
+    </script>
+</body>
+</html>
