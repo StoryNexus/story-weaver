@@ -584,7 +584,7 @@
             }
         };
 
-        function modelInfo(provider, id) {
+                function modelInfo(provider, id) {
             return MODEL_CATALOG[provider].models.find(m => m.id === id) || null;
         }
 
@@ -595,6 +595,34 @@
             const saved = localStorage.getItem('nexus_model');
             sel.value = modelInfo(provider, saved) ? saved : cfg.default;
         }
+
+        // Provider-specific enforcement — Google models only. Session review
+        // found Gemini repeatedly violating Player Agency (action chaining)
+        // and the Fixation Prohibition (recurring anatomical description),
+        // rules already CRITICAL/NEVER-VIOLATE in framework.txt. Claude
+        // sessions on the same framework text did not reproduce either
+        // pattern. Appended ONLY when provider === 'google'.
+        const GEMINI_REINFORCEMENT = `
+================================================================================
+PROVIDER-SPECIFIC ENFORCEMENT NOTE (Google models only)
+================================================================================
+
+This note exists because session review has shown specific, repeated violations of rules already stated above. These are not new rules. They are the SAME rules, restated because they were skipped.
+
+VIOLATION PATTERN 1 — RAILROADING VIA ACTION CHAINING
+Confirmed failure example from a real session: the player said "I take the drink and meander over to the bar." The response chained: takes drink -> stares at her foot -> narrates internal arousal -> walks inside -> crouches -> inventories the minibar -> delivers four lines of new dialogue -> leans on a doorframe -> THEN asks "what do you do?"
+That is one player input expanded into eight-plus unauthorized beats, including a narrated internal sensation ("that low, heavy pull of arousal") the player never established.
+
+THE FIX: After the player's stated action is resolved, STOP. Do not invent the next leg of the journey, the next room, or the next block of dialogue unless the player asked for a time skip or said "continue" / "and then." One input, one beat, then hand back control. If you are not certain whether the player's sentence covers what you are about to narrate, it does not.
+
+VIOLATION PATTERN 2 — ANATOMICAL FIXATION
+Confirmed failure example: across two consecutive responses, in an ordinary Tier 0-1 bar conversation with no Intimacy Check-in initiated, the same NPC's breasts and bare foot each received a full descriptive paragraph in BOTH responses, using near-identical language ("shapely breasts," "full and perfectly formed," toes curling on a brass rail) regardless of what the dialogue was actually about.
+
+THE FIX: A feature does not get re-described just because it is available to describe. If the previous response already gave a body part a full descriptive beat, this response does NOT repeat it. In Tier 0-1 social scenes, physical description is ONE small beat woven into the action — not a standalone paragraph, and not the majority of the response. Dialogue and subtext carry the scene. The Observational Appraisal rules (full anatomical detail) apply when the player actively looks or asks, or the scene has actually escalated — not by default, and not on a loop. See: THE FIXATION PROHIBITION, Physical Description Framework.
+
+BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, rather than writing only what the player's actual input and the actual escalation state authorize. Before finalizing this response, check: did the player's last message authorize everything I am about to narrate? Did the previous response already cover this body part or feature? If either answer gives you pause, cut the response back until both answers are clean.
+`;
+
 
         // ============================================================
         // STATE
