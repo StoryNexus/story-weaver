@@ -3,7 +3,9 @@
 <head>
     <!-- The Nexus — nexus.html (mobile) | June 2026 patch: external framework fetch, model catalog
          refresh, sampling-parameter gating, session round-trip preservation (reference_documents
-         no longer stripped on re-save), injection/quota/key-check fixes -->
+         no longer stripped on re-save), injection/quota/key-check fixes | June 23 patch: Fable 5/
+         Mythos 5 marked unavailable (export-control suspension), Gemini-specific anti-railroading/
+         anti-fixation reinforcement -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Nexus</title>
@@ -285,6 +287,10 @@
             border-color: var(--accent);
         }
 
+        .modal select option:disabled {
+            color: var(--text-muted);
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -455,10 +461,11 @@
             <select id="model-select">
                 <!-- options rendered from MODEL_CATALOG on open -->
             </select>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Greyed-out models are temporarily unavailable (e.g. Claude Fable 5 / Mythos 5 are suspended under an active export-control directive as of June 12, 2026).</p>
 
             <label>Temperature: <span id="temp-display">1.0</span></label>
             <input type="range" id="temp-slider" min="0" max="1.0" step="0.05" value="1.0" oninput="updateTempDisplay()">
-            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Fable 5, Opus 4.8, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Opus 4.8, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
 
             <div class="modal-buttons">
                 <button class="modal-btn secondary" onclick="closeSettings()">Cancel</button>
@@ -543,11 +550,19 @@
         }
 
         // ============================================================
-        // MODEL CATALOG — verified June 10, 2026. The ONLY place model
+        // MODEL CATALOG — verified June 23, 2026. The ONLY place model
         // IDs live. sampling:false = model rejects the `temperature`
-        // parameter (Anthropic removed sampling params from Opus 4.7
-        // onward; OpenAI's GPT-5 thinking tiers reject it as well).
-        // gemini-2.0-flash was shut down June 1, 2026.
+        // parameter. unavailable:true = model is known and valid but
+        // currently cannot be used — kept in the catalog (rather than
+        // deleted) so it can be silently re-enabled if access is
+        // restored, but disabled in the picker and never selected as
+        // a default or stale-localStorage fallback.
+        //
+        // claude-fable-5 / claude-mythos-5: suspended June 12, 2026
+        // under a US government export-control directive. Anthropic
+        // states all other Claude models (Opus, Sonnet, Haiku) are
+        // unaffected. gemini-2.0-flash and gemini-3.1-flash-lite-preview
+        // were shut down earlier in June 2026 and are not listed here.
         // Keep this block in sync with index.html.
         // ============================================================
         const MODEL_CATALOG = {
@@ -556,7 +571,7 @@
                 summary: { deep: 'claude-opus-4-8', quick: 'claude-haiku-4-5-20251001' },
                 models: [
                     { id: 'claude-fable-5',            label: 'Claude Fable 5 (Suspended — export control)', sampling: false, unavailable: true },
-                    { id: 'claude-opus-4-8',            label: 'Claude Opus 4.8 (Best available)',  sampling: false },
+                    { id: 'claude-opus-4-8',           label: 'Claude Opus 4.8 (Best available)', sampling: false },
                     { id: 'claude-sonnet-4-6',         label: 'Claude Sonnet 4.6 (Balanced)' },
                     { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast)' }
                 ]
@@ -595,16 +610,25 @@
             ).join('');
             const saved = localStorage.getItem('nexus_model');
             const savedInfo = modelInfo(provider, saved);
+            // Stale selection (unknown ID) OR a known-but-currently-unavailable
+            // model (e.g. claude-fable-5 under export-control suspension) both
+            // silently migrate to the provider default rather than letting the
+            // player select a model that will fail on send.
             sel.value = (savedInfo && !savedInfo.unavailable) ? saved : cfg.default;
         }
 
-
         // Provider-specific enforcement — Google models only. Session review
-        // found Gemini repeatedly violating Player Agency (action chaining)
-        // and the Fixation Prohibition (recurring anatomical description),
-        // rules already CRITICAL/NEVER-VIOLATE in framework.txt. Claude
-        // sessions on the same framework text did not reproduce either
-        // pattern. Appended ONLY when provider === 'google'.
+        // (2026-06-22, 2026-06-23) found Gemini repeatedly violating two
+        // rules already marked CRITICAL/NEVER-VIOLATE in framework.txt:
+        // Player Agency (action chaining past the player's stated input) and
+        // the Fixation Prohibition (recurring anatomical description across
+        // consecutive responses). Claude sessions running the identical
+        // framework text did not reproduce either pattern. This block
+        // restates both failures using the actual confirmed examples and is
+        // appended ONLY when provider === 'google'. It changes no rules in
+        // framework.txt — it only re-weights emphasis for a model family
+        // that needs more repetition to hold the line.
+        // Keep this block in sync with index.html.
         const GEMINI_REINFORCEMENT = `
 ================================================================================
 PROVIDER-SPECIFIC ENFORCEMENT NOTE (Google models only)
@@ -625,7 +649,6 @@ THE FIX: A feature does not get re-described just because it is available to des
 
 BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, rather than writing only what the player's actual input and the actual escalation state authorize. Before finalizing this response, check: did the player's last message authorize everything I am about to narrate? Did the previous response already cover this body part or feature? If either answer gives you pause, cut the response back until both answers are clean.
 `;
-
 
         // ============================================================
         // STATE
@@ -659,11 +682,13 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
 
         function getModel() {
             // Validates against the catalog — a stale ID left in
-            // localStorage (e.g. claude-opus-4-7) silently migrates
-            // to the provider default instead of 404ing.
+            // localStorage (e.g. claude-opus-4-7), or one that's known
+            // but currently unavailable (e.g. claude-fable-5), silently
+            // migrates to the provider default instead of failing on send.
             const provider = getProvider();
             const stored = localStorage.getItem('nexus_model');
-            return modelInfo(provider, stored) ? stored : MODEL_CATALOG[provider].default;
+            const info = modelInfo(provider, stored);
+            return (info && !info.unavailable) ? stored : MODEL_CATALOG[provider].default;
         }
 
         function getTemperature() {
@@ -1150,7 +1175,6 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
                     systemPrompt += '='.repeat(60) + '\n\n';
                     systemPrompt += characterSheet;
                 }
-
                 if (provider === 'google') {
                     systemPrompt += '\n\n' + GEMINI_REINFORCEMENT;
                 }
@@ -1158,8 +1182,8 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
                 let fullContent = '';
 
                 if (provider === 'anthropic') {
-                    // Anthropic Claude API — Opus 4.8 / Fable 5 reject
-                    // sampling parameters; temperature is gated per-model
+                    // Anthropic Claude API — some models reject sampling
+                    // parameters; temperature is gated per-model
                     const aBody = {
                         model: getModel(),
                         max_tokens: 12288,
@@ -1281,8 +1305,8 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
                         }
                     }
                 } else if (provider === 'openai') {
-                    // OpenAI Chat Completions API (streaming) — GPT-5
-                    // thinking tiers reject `temperature`; gated per-model
+                    // OpenAI Chat Completions API (streaming) — some GPT-5
+                    // tiers reject `temperature`; gated per-model
                     const openaiMessages = [{ role: 'system', content: systemPrompt }];
                     for (const msg of messages) {
                         openaiMessages.push({ role: msg.role, content: msg.content });
