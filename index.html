@@ -1,8 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- The Nexus — index.html | June 2026 patch: external framework fetch, model catalog refresh,
-         sampling-parameter gating, session round-trip preservation, injection/quota/dialog fixes -->
+    <!-- The Nexus — index.html | June 2026 patch: external framework fetch, model catalog
+         refresh, sampling-parameter gating, session round-trip preservation, injection/quota/dialog
+         fixes | June 23 patch: Fable 5/Mythos 5 marked unavailable (export-control suspension),
+         Gemini-specific anti-railroading/anti-fixation reinforcement -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Nexus</title>
@@ -371,6 +373,10 @@
             box-shadow: 0 0 0 3px var(--accent-glow);
         }
 
+        .modal select option:disabled {
+            color: var(--text-muted);
+        }
+
         .modal-buttons {
             display: flex;
             gap: 10px;
@@ -571,10 +577,11 @@
             <select id="model-select">
                 <!-- options rendered from MODEL_CATALOG on open -->
             </select>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Greyed-out models are temporarily unavailable (e.g. Claude Fable 5 / Mythos 5 are suspended under an active export-control directive as of June 12, 2026).</p>
 
             <label>Temperature: <span id="temp-display">1.0</span></label>
             <input type="range" id="temp-slider" min="0" max="1.0" step="0.05" value="1.0" oninput="updateTempDisplay()">
-            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Fable 5, Opus 4.8, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Opus 4.8, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
 
             <div class="modal-buttons">
                 <button class="modal-btn secondary" onclick="closeSettings()">Cancel</button>
@@ -688,20 +695,28 @@
         }
 
         // ============================================================
-        // MODEL CATALOG — verified June 10, 2026. The ONLY place model
+        // MODEL CATALOG — verified June 23, 2026. The ONLY place model
         // IDs live (dropdowns, defaults, and Archive & Trim summaries
         // all read from here). sampling:false = model rejects the
-        // `temperature` parameter (Anthropic removed sampling params
-        // from Opus 4.7 onward; OpenAI's GPT-5 thinking tiers reject
-        // it as well). gemini-2.0-flash was shut down June 1, 2026.
+        // `temperature` parameter. unavailable:true = model is known
+        // and valid but currently cannot be used — kept in the catalog
+        // (rather than deleted) so it can be silently re-enabled if
+        // access is restored, but disabled in the picker and never
+        // selected as a default or stale-localStorage fallback.
+        //
+        // claude-fable-5 / claude-mythos-5: suspended June 12, 2026
+        // under a US government export-control directive. Anthropic
+        // states all other Claude models (Opus, Sonnet, Haiku) are
+        // unaffected. gemini-2.0-flash and gemini-3.1-flash-lite-preview
+        // were shut down earlier in June 2026 and are not listed here.
         // ============================================================
         const MODEL_CATALOG = {
             anthropic: {
                 default: 'claude-sonnet-4-6',
-                summary: { deep: 'claude-sonnet-4-6', quick: 'claude-haiku-4-5-20251001' },
+                summary: { deep: 'claude-opus-4-8', quick: 'claude-haiku-4-5-20251001' },
                 models: [
-                    { id: 'claude-fable-5',            label: 'Claude Fable 5 (Frontier)',    sampling: false },
-                    { id: 'claude-opus-4-8',           label: 'Claude Opus 4.8 (Best)',       sampling: false },
+                    { id: 'claude-fable-5',            label: 'Claude Fable 5 (Suspended — export control)', sampling: false, unavailable: true },
+                    { id: 'claude-opus-4-8',           label: 'Claude Opus 4.8 (Best available)', sampling: false },
                     { id: 'claude-sonnet-4-6',         label: 'Claude Sonnet 4.6 (Balanced)' },
                     { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast)' }
                 ]
@@ -710,21 +725,20 @@
                 default: 'gemini-3.5-flash',
                 summary: { deep: 'gemini-3.1-pro-preview', quick: 'gemini-3.1-flash-lite' },
                 models: [
-                    { id: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro (Best, preview)' },
-                    { id: 'gemini-3.5-flash',       label: 'Gemini 3.5 Flash (Stable flagship)' },
+                    { id: 'gemini-3.1-pro-preview', label: 'Gemini 3.1 Pro (preview)' },
+                    { id: 'gemini-3.5-flash',       label: 'Gemini 3.5 Flash (Stable flagship — Best)' },
                     { id: 'gemini-3.1-flash-lite',  label: 'Gemini 3.1 Flash-Lite (Fast)' },
                     { id: 'gemini-2.5-pro',         label: 'Gemini 2.5 Pro (Legacy)' },
                     { id: 'gemini-2.5-flash',       label: 'Gemini 2.5 Flash (Legacy)' }
                 ]
             },
             openai: {
-                default: 'gpt-5.5',
+                default: 'gpt-5.5-chat-latest',
                 summary: { deep: 'gpt-5.5', quick: 'gpt-5.4-mini' },
                 models: [
                     { id: 'gpt-5.5',             label: 'GPT-5.5 Thinking (Best)',   sampling: false },
                     { id: 'gpt-5.5-chat-latest', label: 'GPT-5.5 Instant (Balanced)' },
-                    { id: 'gpt-5.4-mini',        label: 'GPT-5.4 Mini (Fast)',       sampling: false },
-                    { id: 'gpt-5.4-nano',        label: 'GPT-5.4 Nano (Budget)',     sampling: false }
+                    { id: 'gpt-5.4-mini',        label: 'GPT-5.4 Mini (Fast)',       sampling: false }
                 ]
             }
         };
@@ -736,18 +750,29 @@
         function renderModelOptions(provider) {
             const cfg = MODEL_CATALOG[provider];
             const sel = document.getElementById('model-select');
-            sel.innerHTML = cfg.models.map(m => `<option value="${m.id}">${m.label}</option>`).join('');
+            sel.innerHTML = cfg.models.map(m =>
+                `<option value="${m.id}"${m.unavailable ? ' disabled' : ''}>${m.label}</option>`
+            ).join('');
             const saved = localStorage.getItem('nexus_model');
-            sel.value = modelInfo(provider, saved) ? saved : cfg.default;
+            const savedInfo = modelInfo(provider, saved);
+            // Stale selection (unknown ID) OR a known-but-currently-unavailable
+            // model (e.g. claude-fable-5 under export-control suspension) both
+            // silently migrate to the provider default rather than letting the
+            // player select a model that will fail on send.
+            sel.value = (savedInfo && !savedInfo.unavailable) ? saved : cfg.default;
         }
-}
 
         // Provider-specific enforcement — Google models only. Session review
-        // found Gemini repeatedly violating Player Agency (action chaining)
-        // and the Fixation Prohibition (recurring anatomical description),
-        // rules already CRITICAL/NEVER-VIOLATE in framework.txt. Claude
-        // sessions on the same framework text did not reproduce either
-        // pattern. Appended ONLY when provider === 'google'.
+        // (2026-06-22, 2026-06-23) found Gemini repeatedly violating two
+        // rules already marked CRITICAL/NEVER-VIOLATE in framework.txt:
+        // Player Agency (action chaining past the player's stated input) and
+        // the Fixation Prohibition (recurring anatomical description across
+        // consecutive responses). Claude sessions running the identical
+        // framework text did not reproduce either pattern. This block
+        // restates both failures using the actual confirmed examples and is
+        // appended ONLY when provider === 'google'. It changes no rules in
+        // framework.txt — it only re-weights emphasis for a model family
+        // that needs more repetition to hold the line.
         const GEMINI_REINFORCEMENT = `
 ================================================================================
 PROVIDER-SPECIFIC ENFORCEMENT NOTE (Google models only)
@@ -768,7 +793,6 @@ THE FIX: A feature does not get re-described just because it is available to des
 
 BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, rather than writing only what the player's actual input and the actual escalation state authorize. Before finalizing this response, check: did the player's last message authorize everything I am about to narrate? Did the previous response already cover this body part or feature? If either answer gives you pause, cut the response back until both answers are clean.
 `;
-
 
         // ============================================================
         // STATE
@@ -802,11 +826,13 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
 
         function getModel() {
             // Validates against the catalog — a stale ID left in
-            // localStorage (e.g. claude-opus-4-7) silently migrates
-            // to the provider default instead of 404ing.
+            // localStorage (e.g. claude-opus-4-7), or one that's known
+            // but currently unavailable (e.g. claude-fable-5), silently
+            // migrates to the provider default instead of failing on send.
             const provider = getProvider();
             const stored = localStorage.getItem('nexus_model');
-            return modelInfo(provider, stored) ? stored : MODEL_CATALOG[provider].default;
+            const info = modelInfo(provider, stored);
+            return (info && !info.unavailable) ? stored : MODEL_CATALOG[provider].default;
         }
 
         function getTemperature() {
@@ -1444,10 +1470,6 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
                 });
             }
 
-                if (provider === 'google') {
-                    systemPrompt += '\n\n' + GEMINI_REINFORCEMENT;
-                }
-
             // 2. Generate ROLLING continuity summary using AI
             try {
                 let summaryPrompt = `You are the Continuity Director for a high-fidelity roleplay campaign.
@@ -1563,7 +1585,7 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                     if (!summary) throw new Error('No summary generated from OpenAI API');
                 } else if (provider === 'anthropic') {
                     // Gate sampling here too — required if summary.deep is
-                    // ever pointed at Opus 4.8 or Fable 5
+                    // ever pointed at a model that rejects temperature
                     const sBody = {
                         model: summaryModel,
                         max_tokens: 8192,
@@ -1831,12 +1853,15 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                         systemPrompt += `--- ${doc.name} ---\n\n${doc.content}\n\n`;
                     });
                 }
+                if (provider === 'google') {
+                    systemPrompt += '\n\n' + GEMINI_REINFORCEMENT;
+                }
 
                 let fullContent = '';
 
                 if (provider === 'anthropic') {
-                    // Anthropic Claude API — Opus 4.8 / Fable 5 reject
-                    // sampling parameters; temperature is gated per-model
+                    // Anthropic Claude API — some models reject sampling
+                    // parameters; temperature is gated per-model
                     const aBody = {
                         model: getModel(),
                         max_tokens: 12288,
@@ -1958,8 +1983,8 @@ GENERATE A SINGLE CONSOLIDATED CHARACTER SHEET USING THIS EXACT FORMAT:
                         }
                     }
                 } else if (provider === 'openai') {
-                    // OpenAI Chat Completions API (streaming) — GPT-5
-                    // thinking tiers reject `temperature`; gated per-model
+                    // OpenAI Chat Completions API (streaming) — some GPT-5
+                    // tiers reject `temperature`; gated per-model
                     const openaiMessages = [{ role: 'system', content: systemPrompt }];
                     for (const msg of messages) {
                         openaiMessages.push({ role: msg.role, content: msg.content });
