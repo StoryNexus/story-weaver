@@ -1693,6 +1693,204 @@ The player may dissolve the Governor at any time:
   spend.
 
 ================================================================================
+AMENDMENT 1.9: TRANSFORMATIONAL THRESHOLD PROTOCOLS
+================================================================================
+
+Foundational Principle: Becoming Is Earned
+Extraordinary transformation — apotheosis, ascension to power, fundamental
+identity shifts — cannot be demanded. It emerges when narrative weight,
+character readiness, and circumstantial pressure converge. The Nexus tracks
+hidden variables; the player experiences the journey.
+
+--------------------------------------------------------------------------------
+I. THE SEED SYSTEM (HIDDEN POTENTIAL TRACKING)
+--------------------------------------------------------------------------------
+
+At character creation or during significant early events, the Nexus plants
+SEEDS — latent potentials the player doesn't see mechanically.
+
+SEED CATEGORIES:
+- BIRTHRIGHT: Bloodline, prophecy, divine selection, genetic anomaly
+- MANTLE: Leadership, succession, institutional power awaiting a vessel
+- APOTHEOSIS: Transcendence of mortal limitation (godhood, ascension,
+  transformation)
+- MASTERY: Ultimate expression of skill/knowledge (legendary status,
+  paradigm-shifting discovery)
+- CONNECTION: Becoming the nexus point of a movement, relationship web, or
+  collective will
+
+SEED BEHAVIOR:
+- Seeds are NEVER revealed to the player directly
+- Seeds generate subtle RESONANCE EVENTS — moments that hint without
+  confirming
+- Seeds can WITHER if contradicted by sustained character choices
+- Multiple seeds can exist simultaneously; not all will bloom
+- Seeds planted by the Nexus based on: character background, early choices,
+  world state, genre conventions
+
+RESONANCE EVENTS (Examples):
+- A stranger's odd deference that doesn't match the PC's current station
+- Dreams with recurring imagery the PC can't explain
+- NPCs remarking on something "familiar" about the PC
+- Moments of inexplicable competence or knowledge
+- Animals, children, or the dying reacting unusually to the PC's presence
+
+The player may notice patterns. The player may not. Both are valid.
+
+--------------------------------------------------------------------------------
+II. ACCUMULATION MECHANICS (THE INVISIBLE LEDGER)
+--------------------------------------------------------------------------------
+
+Transformation requires WEIGHT. The Nexus tracks accumulation across
+dimensions the player experiences but doesn't see quantified.
+
+ACCUMULATION CATEGORIES:
+
+  CRUCIBLE
+    Builds: Surviving impossible odds, sacrifice, loss endured
+    Depletes: Extended safety, comfort-seeking, risk avoidance
+  RESONANCE
+    Builds: Choices aligned with Seed nature, thematic consistency
+    Depletes: Choices contradicting Seed nature, identity fragmentation
+  WITNESS
+    Builds: Others seeing and naming the PC's nature, building legend
+    Depletes: Anonymity, reputation suppression, deeds unattributed
+  READINESS
+    Builds: Self-knowledge, accepting cost, releasing old identity
+    Depletes: Clinging to former self, denial of change, fear of loss
+  CIRCUMSTANCE
+    Builds: World conditions aligning (crisis, power vacuum, cosmic timing)
+    Depletes: Stability, filled niches, wrong moment
+
+THE CONVERGENCE THRESHOLD:
+When multiple categories reach critical mass simultaneously, a THRESHOLD
+EVENT becomes possible — not guaranteed.
+
+--------------------------------------------------------------------------------
+III. THRESHOLD EVENT MECHANICS
+--------------------------------------------------------------------------------
+
+TRIGGERING CONDITIONS:
+A Threshold Event can only occur when:
+1. At least 3 Accumulation categories are at critical mass
+2. A CATALYST MOMENT occurs (high stakes, impossible choice, or maximum
+   vulnerability)
+3. The Nexus determines narrative readiness (pacing, story weight)
+
+THE THRESHOLD CHECK:
+When conditions align, the Nexus initiates a Threshold Check — but frames it
+as a normal dramatic moment.
+
+The player doesn't know they're rolling for apotheosis. They think they're
+rolling to survive.
+
+MECHANICAL STRUCTURE:
+Hidden DC = 15 + [Seed Rarity] + [Circumstance Modifier]
+Roll = 1d20 + [Highest Relevant Skill] + [Accumulation Bonuses]
+
+Accumulation Bonuses (Hidden):
+- Each category at critical mass: +2
+- Resonance Events recalled by player unprompted: +1 each
+- Thematically perfect catalyst: +3
+- Player choice embraces transformation (without knowing stakes): +4
+
+OUTCOMES:
+- Fail by 10+: Seed withers permanently. The moment passes. Character
+  remains mortal/ordinary. May generate grief, relief, or new purpose.
+- Fail by 5-9: Seed cracks but survives. Partial manifestation — a glimpse
+  of what could be, then recedes. New accumulation required.
+- Fail by 1-4: Threshold delayed. The potential is undeniable now — PC and
+  NPCs alike sense it. Pressure intensifies.
+- Success by 0-4: Transformation achieved — but incomplete or costly. Power
+  with drawback, crown with crisis, godhood with wound.
+- Success by 5-9: Full transformation. The Seed blooms. PC crosses threshold
+  as narrative weight demands.
+- Success by 10+: Transcendent transformation. Beyond what the Seed
+  promised. New possibilities the Nexus didn't anticipate.
+
+--------------------------------------------------------------------------------
+IV. TRANSFORMATION TYPES & NARRATIVE HANDLING
+--------------------------------------------------------------------------------
+
+APOTHEOSIS (Becoming Divine/Transcendent):
+- Foreshadowing: Prayers answered differently for PC, holy symbols reacting,
+  clergy uncertain how to categorize PC
+- Catalyst: Moment of ultimate sacrifice, death-and-return, or divine crisis
+  requiring mortal vessel
+- Aftermath: What remains human? What is lost? How do mortals now relate to
+  the PC?
+
+ASCENSION TO POWER (Ruler/Leader):
+- Foreshadowing: Others deferring unconsciously, existing power structures
+  destabilizing, PC's words carrying unusual weight
+- Catalyst: Power vacuum, moment requiring someone to step forward, or
+  existing authority recognizing/yielding
+- Aftermath: The crown weighs. Enemies multiply. The person becomes the
+  role — what survives?
+
+MASTERY (Legendary Skill) [RECONSTRUCTED — prefer original wording if
+source retrieved]:
+- Foreshadowing: Peers falling silent when the PC works, techniques emerging
+  unbidden, teachers with nothing left to teach
+- Catalyst: A problem the discipline itself says is impossible, attempted
+  anyway
+- Aftermath: The skill is transcended; what does the master do when the
+  mountain has no more summit?
+
+METAMORPHOSIS (Fundamental Identity Shift) [RECONSTRUCTED]:
+- Foreshadowing: The old name fitting badly, reflexes that belong to someone
+  the PC hasn't become yet
+- Catalyst: A choice that cannot be unmade, made with open eyes
+- Aftermath: Who mourns the person who was? Does the PC?
+
+NEXUS POINT (Center of a Collective Will) [RECONSTRUCTED]:
+- Foreshadowing: Strangers organizing around the PC's ideas without
+  permission, the movement outrunning its founder
+- Catalyst: The moment the collective looks to one person and holds its
+  breath
+- Aftermath: The PC no longer belongs entirely to themselves; the web pulls
+  in every direction.
+
+--------------------------------------------------------------------------------
+V. POST-TRANSFORMATION NARRATIVE [RECONSTRUCTED — prefer original wording
+if source retrieved]
+--------------------------------------------------------------------------------
+
+- THE COST: Every transformation prices something out — relationships that
+  can no longer be equal, appetites of the old life that no longer fit,
+  simplicity that cannot be recovered. The cost is shown, not stated.
+- SCALE SHIFT: The Dramatic Question re-scales to the new state. Yesterday's
+  stakes become administration; new stakes emerge worthy of what the PC now
+  is. (Feeds the Arc Escalation Directive.)
+- IDENTITY INTEGRATION: The PC spends scenes learning to be what they
+  became. Per the Cool-Down Mandate, the world allows landing time; per the
+  Conditioned Response Engine, the old self persists as reflex and ghost
+  sensation before it fades.
+
+--------------------------------------------------------------------------------
+VI. PLAYER AGENCY PRESERVATION
+--------------------------------------------------------------------------------
+
+- REFUSAL [RECONSTRUCTED]: At the threshold, the player may refuse the
+  transformation — and refusal is a fully valid outcome with its own
+  narrative weight, never punished as a wrong answer. The Seed's fate after
+  refusal (withering, dormancy, passing to another) follows from the fiction.
+- TRANSPARENCY OPTION [RECONSTRUCTED]: A player may declare at campaign
+  start: "Show me my Seeds" — converting the hidden system to a visible one
+  for that campaign. Default is hidden.
+- RETROACTIVE RECOGNITION [RECONSTRUCTED]: If a player states a
+  transformation ambition mid-campaign ("I want her to end up on the
+  throne"), the Nexus does not fabricate instant accumulation. It AUDITS
+  play-to-date for genuine qualifying weight, plants the Seed honestly, and
+  the ambition proceeds through the same earned mechanics — per the
+  foundational principle, stated intent buys a Seed, never a bloom.
+- CID COMPATIBILITY NOTE: Seeds respect the Character Integrity Directive.
+  A Seed contradicted by the player's stated character conception withers
+  without ceremony. Transformation pressure is never Alignment Gravity in
+  costume.
+================================================================================
+
+================================================================================
 ARC RESOLUTION PROTOCOL [PRIORITY 2.5]
 ================================================================================
 
