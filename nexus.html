@@ -5,7 +5,8 @@
          refresh, sampling-parameter gating, session round-trip preservation (reference_documents
          no longer stripped on re-save), injection/quota/key-check fixes | June 23 patch: Fable 5/
          Mythos 5 marked unavailable (export-control suspension), Gemini-specific anti-railroading/
-         anti-fixation reinforcement -->
+         anti-fixation reinforcement | July 2 patch: Fable 5 restored (export controls lifted),
+         Claude Sonnet 5 added as new default, refusal stop_reason surfaced -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>The Nexus</title>
@@ -461,11 +462,11 @@
             <select id="model-select">
                 <!-- options rendered from MODEL_CATALOG on open -->
             </select>
-            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Greyed-out models are temporarily unavailable (e.g. Claude Fable 5 / Mythos 5 are suspended under an active export-control directive as of June 12, 2026).</p>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Greyed-out models are temporarily unavailable. Claude Fable 5 access was restored July 1, 2026 — the export-control suspension has been lifted.</p>
 
             <label>Temperature: <span id="temp-display">1.0</span></label>
             <input type="range" id="temp-slider" min="0" max="1.0" step="0.05" value="1.0" oninput="updateTempDisplay()">
-            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Opus 4.8, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
+            <p style="color: var(--text-muted); font-size: 11px; margin-top: -10px; margin-bottom: 14px;">Some frontier models (Claude Fable 5, Opus 4.8, Sonnet 5, GPT-5.5 Thinking) manage sampling internally — temperature is automatically omitted for them.</p>
 
             <div class="modal-buttons">
                 <button class="modal-btn secondary" onclick="closeSettings()">Cancel</button>
@@ -550,7 +551,7 @@
         }
 
         // ============================================================
-        // MODEL CATALOG — verified June 23, 2026. The ONLY place model
+        // MODEL CATALOG — verified July 2, 2026. The ONLY place model
         // IDs live. sampling:false = model rejects the `temperature`
         // parameter. unavailable:true = model is known and valid but
         // currently cannot be used — kept in the catalog (rather than
@@ -558,21 +559,30 @@
         // restored, but disabled in the picker and never selected as
         // a default or stale-localStorage fallback.
         //
-        // claude-fable-5 / claude-mythos-5: suspended June 12, 2026
-        // under a US government export-control directive. Anthropic
-        // states all other Claude models (Opus, Sonnet, Haiku) are
-        // unaffected. gemini-2.0-flash and gemini-3.1-flash-lite-preview
-        // were shut down earlier in June 2026 and are not listed here.
+        // claude-fable-5: RESTORED — the June 12 export-control
+        // directive was lifted and Anthropic re-enabled API access on
+        // July 1, 2026, so the unavailable flag is removed. Notes:
+        // thinking is always on, `temperature` is rejected, pricing is
+        // premium ($10/$50 per MTok), and the org must have 30-day
+        // data retention (zero-data-retention orgs 400 on every call).
+        // claude-sonnet-5: added — current Sonnet flagship, near-Opus
+        // quality at Sonnet cost; rejects non-default sampling params,
+        // so gated like the other frontier models. New default.
+        // Google: gemini-3.5-pro is still unreleased (3.1 Pro preview
+        // remains the Pro tier); gemini-3.1-flash-lite-preview shuts
+        // down July 9, 2026 — we already use the GA id. OpenAI:
+        // GPT-5.5 line unchanged; GPT-5.6 is partner-preview only.
         // Keep this block in sync with index.html.
         // ============================================================
         const MODEL_CATALOG = {
             anthropic: {
-                default: 'claude-sonnet-4-6',
+                default: 'claude-sonnet-5',
                 summary: { deep: 'claude-opus-4-8', quick: 'claude-haiku-4-5-20251001' },
                 models: [
-                    { id: 'claude-fable-5',            label: 'Claude Fable 5 (Suspended — export control)', sampling: false, unavailable: true },
-                    { id: 'claude-opus-4-8',           label: 'Claude Opus 4.8 (Best available)', sampling: false },
-                    { id: 'claude-sonnet-4-6',         label: 'Claude Sonnet 4.6 (Balanced)' },
+                    { id: 'claude-fable-5',            label: 'Claude Fable 5 (Most capable — premium price)', sampling: false },
+                    { id: 'claude-opus-4-8',           label: 'Claude Opus 4.8 (Opus flagship)', sampling: false },
+                    { id: 'claude-sonnet-5',           label: 'Claude Sonnet 5 (Balanced — Best value)', sampling: false },
+                    { id: 'claude-sonnet-4-6',         label: 'Claude Sonnet 4.6 (Previous Sonnet)' },
                     { id: 'claude-haiku-4-5-20251001', label: 'Claude Haiku 4.5 (Fast)' }
                 ]
             },
@@ -611,9 +621,10 @@
             const saved = localStorage.getItem('nexus_model');
             const savedInfo = modelInfo(provider, saved);
             // Stale selection (unknown ID) OR a known-but-currently-unavailable
-            // model (e.g. claude-fable-5 under export-control suspension) both
-            // silently migrate to the provider default rather than letting the
-            // player select a model that will fail on send.
+            // model (unavailable:true) both silently migrate to the provider
+            // default rather than letting the player select a model that will
+            // fail on send. A model whose flag is later removed (like Fable 5
+            // in July 2026) becomes selectable again automatically.
             sel.value = (savedInfo && !savedInfo.unavailable) ? saved : cfg.default;
         }
 
@@ -682,9 +693,9 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
 
         function getModel() {
             // Validates against the catalog — a stale ID left in
-            // localStorage (e.g. claude-opus-4-7), or one that's known
-            // but currently unavailable (e.g. claude-fable-5), silently
-            // migrates to the provider default instead of failing on send.
+            // localStorage (e.g. claude-opus-4-7), or one flagged
+            // unavailable:true, silently migrates to the provider
+            // default instead of failing on send.
             const provider = getProvider();
             const stored = localStorage.getItem('nexus_model');
             const info = modelInfo(provider, stored);
@@ -1194,6 +1205,12 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
                     const aInfo = modelInfo('anthropic', aBody.model);
                     if (!aInfo || aInfo.sampling !== false) aBody.temperature = getTemperature();
 
+                    // Fable 5 can end a turn with stop_reason "refusal" — a
+                    // safety-classifier decline that arrives on an otherwise
+                    // successful stream (empty content if pre-output, partial
+                    // if mid-stream). Track it so we don't finalize silently.
+                    let aStopReason = null;
+
                     const response = await fetch('https://api.anthropic.com/v1/messages', {
                         method: 'POST',
                         headers: {
@@ -1232,11 +1249,18 @@ BOTH PATTERNS SHARE ONE ROOT CAUSE: writing what's vivid or available to write, 
                                         fullContent += parsed.delta.text;
                                         updateLastMessage(fullContent + '▌');
                                     }
+                                    if (parsed.type === 'message_delta' && parsed.delta?.stop_reason) {
+                                        aStopReason = parsed.delta.stop_reason;
+                                    }
                                 } catch (e) {
                                     // Skip parse errors for incomplete chunks
                                 }
                             }
                         }
+                    }
+
+                    if (aStopReason === 'refusal') {
+                        throw new Error('The model declined this request (safety-classifier refusal). Rephrase, or switch models in Settings.');
                     }
                 } else if (provider === 'google') {
                     // Google Gemini API
